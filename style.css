@@ -1,0 +1,29 @@
+body{
+background-color :#000000;
+background-image :url(./image/bg_pasq.png);
+padding : 0px;margin : 0px;
+font-size : 14px;font-family : Verdana,Osaka;letter-spacing : 2px;line-height : 200%;color : #000000}
+
+td{font-size : 14px;font-family : Verdana,Verdana;letter-spacing :2px;line-height : 200%;color : #000000;}
+
+A:link {COLOR: #000000;}
+A:visited {COLOR: #000000;}
+A:active {COLOR: #000000;}
+A:hover {}
+
+
+.h{padding : 3px;color : #F5F5F5;font-size : 10px;font-family : Verdana,Osaka;letter-spacing : 4px;line-height : 150%;
+text-align : left;width : 80%;border-bottom : solid #DCDCDC 1px;margin-top : 20px;}
+
+.t{padding : 10px;font-size : 10px;letter-spacing : 2px;line-height : 160%;width : 80%;text-align : left;font-family : Verdana,Osaka;color : #DCDCDC;}
+
+.copy{width : 100%;text-align : center;font-size : 10px;letter-spacing : 2px;border-bottom : dashed #808080 1px;border-top : dashed #808080 1px;color : #D0D0D0;}
+
+.title{filter:dropshadow(color=#404040,offx=-1,offy=-1,positive=true);font-size : 13px;color : #FFFFFF;font-family : Verdana}
+
+#area_info{
+	background-color: #dddddd;
+	background-image: url("information_img.gif");
+	background-repeat: no-repeat;
+	background-position: center top;
+	}

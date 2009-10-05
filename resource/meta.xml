@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PasQ>
+	<InitialDataUrl>
+		<BMD src="bmd.xml"></BMD>
+		<PCD src="cnv_pcd_opu.xml"></PCD>
+		<CCD src="ccd.xml"></CCD>
+	</InitialDataUrl>
+	<extra>
+	</extra>
+</PasQ>

@@ -1,0 +1,15 @@
+opu("岡山県立大学")=[
+Speak("explain1.mp3",_, _);
+Index("保健福祉学部");
+Replace("IMG_3683.JPG", "fade");
+Speak("explain2.mp3",_, _);
+Index("情報工学部");
+Replace("IMG_3681.JPG", "fade");
+Speak("explain3.mp3",_, _);
+Index("デザイン学部");
+Replace("IMG_3682.JPG", "fade");
+Speak("explain4.mp3",_, _);
+Index("ロケーション");
+Replace("map_access_large.jpg", "fade");
+Speak("explain5.mp3",_, _);
+]

@@ -1,0 +1,878 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>パノラマ配置(β)</title>
+
+<script src="http://maps.google.com/maps?file=api&amp;v2.61&amp;key=ABQIAAAACjdglyr4sro--s0RMfCXghQr-v7FKU7jRKCwDmIKI8SIdNyeUhRQWwim_dlZecqD1EZzBqmO3jmRQQ" type="text/javascript"></script>
+<script language="JavaScript" type="text/javascript" src="js/xmlhttp.js"></script>
+<script language="JavaScript" type="text/javascript" src="js/prototype.js"></script>
+<script language="JavaScript" type="text/javascript" src="js/ObjTree.js"></script>
+<script language="JavaScript" type="text/javascript">
+
+//<![CDATA[
+var PCD = null;
+var map;
+var panoMarker = new Array();
+
+var stat = 0;
+// 0:初期状態, 1:マーカー選択, 2:ファイル選択
+// 3:マーカー配置, 4:スタートパノ設定, 5:切替情報設定
+// 9:パノラマ一括配置
+
+var startPano = null;
+
+// 現在選択中のマーカー
+var currentMarker = null;
+
+// 現在のXMLファイル
+var currentFile = "";
+
+// 現在のパノラマ画像の情報
+var currentImgSrc = "";
+var currentImgWidth = 0;
+var currentImgHeight = 0;
+var directionNorth = 0;
+var panoWidth = 0;
+var panoHeight = 0;
+
+// 保存時のpanoidの初期値(複数のファイルをまとめる際に指定)
+var startCount = 0;
+
+var panoid_max = -1;
+var number = new Array();
+var panoList = new Array();
+
+// 近傍情報用
+var flag_chpano = false;
+var rangeLine = new Array();
+
+// パノラマ一括配置用
+var tmpPanoList = new Array();
+var startMarker = null;
+var endMarker = null;
+var lineObj = null;
+
+//--------------------------------------------------
+
+
+// 読込・保存用XMLファイルリストの取得
+function XMLMode(mode){
+	if(!((stat == 0) || (stat == 1))) return;
+	if(currentMarker) removeChangePanoramas(currentMarker.title);
+	unclickMarker(currentMarker);
+	currentMarker = null;
+	stat = 2;
+	var sendData = "mode="+encodeURI(mode);
+	if(mode == 'load'){
+		httpObj = createXMLHttpRequest(displayData_l);
+	}
+	else if(mode == 'save'){
+		httpObj = createXMLHttpRequest(displayData_s);
+	}
+	if (httpObj){
+		httpObj.open("POST","pasq.php",true);
+		httpObj.setRequestHeader('Content-Type','application/x-www-form-urlencoded; charset=utf-8');
+		httpObj.send(sendData);
+	}
+}
+// 読込XMLファイルの選択画面
+function displayData_l(){
+	if ((httpObj.readyState == 4) && (httpObj.status == 200)){
+		var html = "ファイルを開く<br /><br />" + httpObj.responseText
+			+ "<br /><br /><br /><a href='javascript:cansel()'>キャンセル</a>";
+		document.getElementById("info").innerHTML = html;
+		document.getElementById("info2").innerHTML = "";
+	}
+}
+// 保存XMLファイルの選択画面
+function displayData_s(){
+	if ((httpObj.readyState == 4) && (httpObj.status == 200)){
+		clearInfo();
+		var html = "ファイルの保存<br /><br />" + httpObj.responseText
+			+ "<br /><br /><form name=save onsubmit='return checkInfo()'><input type=text name=file";
+		if(currentFile != ""){
+			html +=  " value=" + currentFile;
+		}
+		html+= " />"
+			+ "<a href='javascript:saveXML()'>OK</a></form>"
+			+ "<br /><br /><br /><a href='javascript:cansel()'>キャンセル</a>";
+		document.getElementById("info").innerHTML = html;
+	}
+}
+
+// 選択したXMLファイル名をフォームに表示(PHP側から呼出)
+function selectXML(filename){
+	document.save.file.value = filename;
+}
+
+// キャンセルを選択したときに実行
+function cansel(){
+	unclickMarker(currentMarker);
+	clearInfo();
+	stat = 0;
+}
+
+// 保存XMLファイル名のフォームでエンター入力を受付
+function checkInfo(){
+	saveXML();
+	return false;
+}
+
+
+// 読込XMLファイルの取得
+function loadXML(filename){
+	currentFile = filename;
+	var tree = new XML.ObjTree();
+	var data = tree.parseHTTP("resource/"+filename, {}, onloadPCD);
+}
+
+//XMLファイルの読込処理
+function onloadPCD(data, options){
+	PCD = data.PCD;
+	startPano = PCD.Panoramas["-startpano"];
+
+	// パノラマ画像が1つしかない場合の処理(後の処理のために配列化)
+	if((PCD.Panoramas.Panorama.length == undefined) && (PCD.Panoramas.Panorama != undefined)){
+		var tempx = PCD.Panoramas.Panorama.coords["-lng"];
+		var tempy = PCD.Panoramas.Panorama.coords["-lat"];
+		currentImgSrc = PCD.Panoramas.Panorama.img["-src"];
+		currentImgWidth = PCD.Panoramas.Panorama.img["-width"];
+		currentImgHeight = PCD.Panoramas.Panorama.img["-height"];
+		directionNorth = PCD.Panoramas.Panorama.direction["-north"];
+		PCD = null;
+		newPanorama(tempx, tempy);
+	}
+
+	//number["panoid"] で添字の番号を参照できるようにする
+	for(var i=0; i<PCD.Panoramas.Panorama.length; i++){
+		number[PCD.Panoramas.Panorama[i]["-panoid"]] = i;
+	}
+
+	// マップの初期化
+	clearMap();
+	panoMarker = new Array();
+	panoid_max = -1;
+	// パノラママーカーの配置
+	for(var i=0;i<PCD.Panoramas.Panorama.length;i++){
+		var id = parseInt(PCD.Panoramas.Panorama[i]["-panoid"].substring(4));
+		if(id > panoid_max) panoid_max = id;
+		panoMarker[i] = setMarker(0, PCD.Panoramas.Panorama[i].coords["-lng"], PCD.Panoramas.Panorama[i].coords["-lat"], PCD.Panoramas.Panorama[i]["-panoid"]);
+	}
+	clearInfo();
+	var html = "loaded";
+	document.getElementById("info").innerHTML = html;
+}
+
+
+// XMLの保存
+function saveXML(){
+	var filename = document.save.file.value;
+	if(filename.indexOf(".xml") == -1) filename = filename + ".xml";
+	var mode = "savetext";
+
+	if(PCD == null){
+		document.getElementById("info").innerHTML = "";
+		alert("パノラマ画像を1つ以上配置してください");
+		cansel();
+		return;
+	}
+	else{
+		if(startPano == null){		
+			document.getElementById("info").innerHTML = "";
+			alert("スタートパノが設定されていません");
+			cansel();
+			return;
+		}
+		else{
+			var flag_sp = false;
+			PCD.Panoramas["-startpano"] = startPano;
+		}
+	}
+
+	// panoidの再割当
+	var count = startCount;
+	for(var i = 0; i < PCD.Panoramas.Panorama.length; i++){
+		if(PCD.Panoramas.Panorama[i]){
+			PCD.Panoramas.Panorama[i]["-panoid"] = "pano" + count;
+			count++;
+		}
+	}
+
+// データをXML形式に
+	var data = new PCDset();
+	var tree = new XML.ObjTree();
+	var textData = tree.writeXML(data);
+	data = tree.parseXML(textData);
+	textData = tree.writeXML(data);
+
+	var sendData = "mode="+encodeURI(mode);
+	sendData += "&filename="+encodeURI(filename);
+	sendData += "&data="+encodeURI(textData);
+	httpObj = createXMLHttpRequest(displayData);
+	if (httpObj){
+		httpObj.open("POST","pasq.php",true);
+		httpObj.setRequestHeader('Content-Type','application/x-www-form-urlencoded; charset=utf-8');
+		httpObj.send(sendData);
+	}
+	currentFile = filename;
+}
+function displayData(){
+	if ((httpObj.readyState == 4) && (httpObj.status == 200)){
+		document.getElementById("info").innerHTML = httpObj.responseText;
+		stat = 0;
+	}
+}
+
+function PCDset(){
+	this.PCD = PCD;
+}
+
+// 情報提示部の初期化
+function clearInfo(){
+	document.getElementById("info0").innerHTML = "";
+	document.getElementById("info").innerHTML = "";
+	document.getElementById("info2").innerHTML = "";
+}
+
+// マーカー選択時
+function markerMode(marker){
+	var panoid = setMarkerPoint(marker);
+	var num = number[panoid];
+	var dir = calcNorthOffset(marker.title);
+
+	clearInfo();
+	var html = ""
+//	var html = "<applet code=ptviewer.class archive=PTViewer.jar width=250 height=125 pan=" + dir + "><param name=file value=./resource/" + PCD.Panoramas.Panorama[num].img["-src"] + "></applet><br /><br />"
+		+ "<a href=./resource/" + PCD.Panoramas.Panorama[num].img["-src"] + " target=_blank>" + PCD.Panoramas.Panorama[num].img["-src"] + "</a><br />"
+		+ "( " + PCD.Panoramas.Panorama[num].img["-width"] + " × " + PCD.Panoramas.Panorama[num].img["-height"] + " )<br />"
+		+ "(<a href=javascript:openPTViewer('" + PCD.Panoramas.Panorama[num].img["-src"] + "')>PTViewer</a>)"
+		+ "<form name=detail>経度：<input type=text name=x size=20 value=" + PCD.Panoramas.Panorama[num].coords["-lng"] + " /><br />"
+		+ "緯度：<input type=text name=y size=20 value=" + PCD.Panoramas.Panorama[num].coords["-lat"] + " /><br /><br />"
+		+ "方位：<input type=text name=direction size=20 value=" + PCD.Panoramas.Panorama[num].direction["-north"] + " /></form><br />"
+		+ "<br /><br /><a href=javascript:deleteMarker()>パノラマ削除</a>";
+
+	document.getElementById("info").innerHTML = html;
+
+	var html2 = "";
+	document.getElementById("info2").innerHTML = html2;
+}
+
+
+//--------------------------------------------------
+
+
+window.onload = function() {
+
+//google maps
+	map = new GMap2(document.getElementById("gmap"));
+	map.setCenter(new GLatLng(34.69205936376485, 133.78026813268661), 0);
+	map.addControl(new GLargeMapControl());
+	map.addControl(new GScaleControl());
+	map.setZoom(17);
+
+	GEvent.addListener(map,"click",function(marker,point){
+		if(marker){ // マーカーをクリックした時
+			switch(stat){
+				case 0: // 初期状態
+					currentMarker = clickMarker(marker);
+					setChangePanoramas(currentMarker.title);
+					markerMode(currentMarker);
+					stat = 1;
+					break;
+				case 1: // 他のマーカー選択時
+					if(currentMarker != marker){
+						var num = number[marker.title];
+						removeChangePanoramas(currentMarker.title);
+						unclickMarker(currentMarker);
+						currentMarker = clickMarker(panoMarker[num]);
+						setChangePanoramas(currentMarker.title);
+						markerMode(currentMarker);
+					}
+					break;
+				case 4: // スタートパノ設定時
+					if(currentMarker != marker){
+						unclickMarker(currentMarker);
+						currentMarker = clickMarker2(marker);
+					}
+					break;
+				case 5:
+					var num = number[currentMarker.title];
+					for(var i = 0; i < PCD.Panoramas.Panorama[num].chpanos.chpano.length; i++){
+						if(marker.title == PCD.Panoramas.Panorama[num].chpanos.chpano[i]["-panoid"]){
+							compPano(currentMarker.title, marker.title);
+							break;
+						}
+					}
+					break;
+			}
+		}
+
+		else{ // 地図をクリックした時
+			switch(stat){
+				case 1: // マーカー選択時
+					if((currentMarker)&&(currentMarker.title)) removeChangePanoramas(currentMarker.title);
+					unclickMarker(currentMarker);
+					clearInfo();
+					stat = 0;
+					break;
+				case 3: // パノラマ配置時
+					newPanorama(point.lng(), point.lat());
+					var num = panoMarker.length;
+					number[PCD.Panoramas.Panorama[num]["-panoid"]] = num;
+					panoMarker[num] = setMarker(1, PCD.Panoramas.Panorama[num].coords["-lng"], PCD.Panoramas.Panorama[num].coords["-lat"], PCD.Panoramas.Panorama[num]["-panoid"]);
+					currentMarker = panoMarker[num];
+					setChangePanoramas(currentMarker.title);
+					markerMode(currentMarker);
+					stat = 1;
+					break;
+				case 9: // パノラマ一括配置時
+					if(startMarker == null) startMarker = setMarker(4, point.lng(), point.lat(), null);
+					else if(endMarker == null) endMarker = setMarker(4, point.lng(), point.lat(), null);
+					if(startMarker !=null && endMarker != null){
+						if(lineObj) map.removeOverlay(lineObj);
+						var points = [new GLatLng(startMarker.getPoint().lat(), startMarker.getPoint().lng()), new GLatLng(endMarker.getPoint().lat(), endMarker.getPoint().lng())];
+						lineObj = new GPolyline(points, "#ff0000");
+						map.addOverlay(lineObj);
+					}
+					break;
+			}
+		}
+	});
+}
+
+function convertX(px){
+	var x = (px*1.03/512*360)-180;
+	return x;
+}
+
+function convertY(py){
+	var y = py*1.03;
+	if(y<256){
+		y=(256-y)/256*3.2;
+		y=Math.atan((Math.exp(y)-Math.exp(-y))/2);
+	}
+	else{
+		y=(y-256)/256*3.2;
+		y=-Math.atan((Math.exp(y)-Math.exp(-y))/2);
+	}
+	y=y*180/Math.PI;
+	return y;
+}
+
+function goCenter(px,py){
+	map.panTo(new GLatLng(py,px));
+}
+
+// マーカー配置
+function setMarker(type, px, py, panoid){
+	var markerObj = new GIcon();
+	markerObj.iconSize = new GSize(12,20);
+	markerObj.iconAnchor = new GPoint(6,20);
+// type
+// 0 : 通常マーカー(緑)
+// 1 : 選択マーカー(赤) 移動可能 移動後に緯度・経度設定
+// 2 : スタートパノ(青)
+// 3 : 近傍パノラマ(青)
+// 4 : 一括配置時のスタート・エンドパノ(白)
+	switch(type){
+		case 0:
+			markerObj.image = "./image/mm_20_green.png";
+			var marker = new GMarker(new GLatLng(py,px),{icon:markerObj});
+			break;
+		case 1:
+			markerObj.image = "./image/mm_20_red.png";
+			var marker = new GMarker(new GLatLng(py,px),{draggable:true, icon:markerObj});
+			GEvent.addListener(marker,"mouseup",function(){
+			if(document.detail){
+				var num = number[setMarkerPoint(marker)];
+				document.detail.x.value = PCD.Panoramas.Panorama[num].coords["-lng"];
+				document.detail.y.value = PCD.Panoramas.Panorama[num].coords["-lat"];
+			}
+			});
+			break;
+		case 2:
+		case 3:
+			markerObj.image = "./image/mm_20_blue.png";
+			var marker = new GMarker(new GLatLng(py,px),{icon:markerObj});
+			break;
+		case 4:
+			markerObj.image = "./image/mm_20_white.png";
+			var marker = new GMarker(new GLatLng(py,px),{draggable:true, icon:markerObj});
+			GEvent.addListener(marker,"mouseup",function(){
+			if(startMarker !=null && endMarker != null){
+				if(lineObj) map.removeOverlay(lineObj);
+				var points = [new GLatLng(startMarker.getPoint().lat(), startMarker.getPoint().lng()), new GLatLng(endMarker.getPoint().lat(), endMarker.getPoint().lng())];
+				lineObj = new GPolyline(points, "#ff0000");
+				map.addOverlay(lineObj);
+			}
+			});
+			break;
+	}
+	marker.title = panoid;
+	map.addOverlay(marker);
+	return marker;
+}
+
+
+//--------------------------------------------------
+
+// パノラマ画像の一括配置
+function setPanoLine(){
+	if(!((stat == 0) || (stat == 1))) return;
+	stat = 9;
+	tmpPanoList = new Array();
+	startMarker = null;
+	endMarker = null;
+	markerNum = 0;
+
+	var mode = "img2";
+	var panolist = "//"
+	if((PCD != null) && (PCD.Panoramas.Panorama.length>0)){
+		for(var i=0;i<PCD.Panoramas.Panorama.length;i++){
+			
+			if(PCD.Panoramas.Panorama[i] != null){
+				panolist += PCD.Panoramas.Panorama[i].img["-src"] + "/";
+			}
+		}
+	}
+	var sendData = "mode="+encodeURI(mode);
+	sendData += "&panolist="+encodeURI(panolist);
+	httpObj = createXMLHttpRequest(displayData_img2);
+	if (httpObj){
+		httpObj.open("POST","pasq.php",true);
+		httpObj.setRequestHeader('Content-Type','application/x-www-form-urlencoded; charset=utf-8');
+		httpObj.send(sendData);
+	}
+}
+function displayData_img2(){
+	if ((httpObj.readyState == 4) && (httpObj.status == 200)){
+		unclickMarker(currentMarker);
+		currentMarker = null;
+		var html = "開始・終了地点をクリックし，<br />画像を順に選択してください<br /><br />"
+		+ "<a href='javascript:setPanoLineOK()'>OK</a> "
+		+ "<a href='javascript:setPanoLineCansel()'>キャンセル</a><br /><br />";
+		document.getElementById("info").innerHTML = html;
+		document.getElementById("info2").innerHTML = httpObj.responseText;
+	}
+}
+
+function selectImg2(filename){
+	tmpPanoList[tmpPanoList.length] = filename;
+	var html = document.getElementById("info").innerHTML;
+	html += "<a href=javascript:openPTViewer('" + filename + "')>" + filename + "</a><br />";
+	document.getElementById("info").innerHTML = html;
+}
+
+function setPanoLineOK(){
+	if(startMarker == null || endMarker == null) return;
+	if(tmpPanoList.length < 3) return;
+
+	var dis_lng = (endMarker.getPoint().lng() - startMarker.getPoint().lng()) / (tmpPanoList.length - 1);
+	var dis_lat = (endMarker.getPoint().lat() - startMarker.getPoint().lat()) / (tmpPanoList.length - 1);
+	for(var i = 0; i < tmpPanoList.length; i++){
+		currentImgSrc = tmpPanoList[i];
+		newPanorama(startMarker.getPoint().lng() + dis_lng * i, startMarker.getPoint().lat() + dis_lat * i);
+		var num = panoMarker.length;
+		number[PCD.Panoramas.Panorama[num]["-panoid"]] = num;
+		panoMarker[num] = setMarker(0, PCD.Panoramas.Panorama[num].coords["-lng"], PCD.Panoramas.Panorama[num].coords["-lat"], PCD.Panoramas.Panorama[num]["-panoid"]);
+	}
+	setPanoLineCansel();
+}
+
+function setPanoLineCansel(){
+	stat = 0;
+	if(startMarker) map.removeOverlay(startMarker);
+	if(endMarker) map.removeOverlay(endMarker);
+	if(lineObj){
+		map.removeOverlay(lineObj);
+		lineObj = null;
+	}
+	clearInfo();
+}
+
+
+//--------------------------------------------------
+
+// PCDファイル新規作成選択時
+function newMap(){
+	if(!((stat == 0) || (stat == 1))) return;
+	var answer = confirm("マップを初期化しますか？");
+	if(!answer) return;
+	currentFile = "";
+	startPano = null;
+	clearMap();
+	PCD = null;
+	panoMarker = new Array();
+	currentMarker = null;
+	panoid_max = -1;
+}
+
+// マップ上のオブジェクトの削除
+function clearMap(){
+	clearInfo();
+	stat = 0;
+	if((currentMarker)&&(currentMarker.title)) removeChangePanoramas(currentMarker.title);
+	if(panoMarker.length > 0){
+		for(var i=0;i<panoMarker.length;i++){
+			if(panoMarker[i]){
+				map.removeOverlay(panoMarker[i]);
+			}
+		}
+	}
+}
+
+function clickMarker(marker){
+	var num = number[marker.title];
+	map.removeOverlay(marker);
+	panoMarker[num] = setMarker(1, PCD.Panoramas.Panorama[num].coords["-lng"], PCD.Panoramas.Panorama[num].coords["-lat"], PCD.Panoramas.Panorama[num]["-panoid"]);
+	return panoMarker[num];
+}
+
+function clickMarker2(marker){
+	var num = number[marker.title];
+	map.removeOverlay(marker);
+	panoMarker[num] = setMarker(2, PCD.Panoramas.Panorama[num].coords["-lng"], PCD.Panoramas.Panorama[num].coords["-lat"], PCD.Panoramas.Panorama[num]["-panoid"]);
+	return panoMarker[num];
+}
+
+function clickMarker3(marker){
+	var num = number[marker.title];
+	map.removeOverlay(marker);
+	panoMarker[num] = setMarker(3, PCD.Panoramas.Panorama[num].coords["-lng"], PCD.Panoramas.Panorama[num].coords["-lat"], PCD.Panoramas.Panorama[num]["-panoid"]);
+	return panoMarker[num];
+}
+
+function unclickMarker(marker){
+	if(marker){
+		var num = number[marker.title];
+		if(document.detail) PCD.Panoramas.Panorama[num].direction["-north"] = document.detail.direction.value;
+		map.removeOverlay(marker);
+		panoMarker[num] = setMarker(0, PCD.Panoramas.Panorama[num].coords["-lng"], PCD.Panoramas.Panorama[num].coords["-lat"], PCD.Panoramas.Panorama[num]["-panoid"]);
+		currentMarker = null;
+		return panoMarker[num];
+	}
+}
+
+// マーカーの緯度・経度を保存
+function setMarkerPoint(marker){
+	var point = marker.getPoint();
+	var num = number[marker.title];
+	PCD.Panoramas.Panorama[num].coords["-lng"] = point.lng();
+	PCD.Panoramas.Panorama[num].coords["-lat"] = point.lat();
+	return PCD.Panoramas.Panorama[num]["-panoid"];
+}
+
+
+// マーカーの削除
+function deleteMarker(){
+	clearInfo();
+	removeChangePanoramas(currentMarker.title);
+	var num = number[currentMarker.title];
+	map.removeOverlay(currentMarker);
+	panoMarker[num] = null;
+	currentMarker = null;
+	if(startPano){
+		if(PCD.Panoramas.Panorama[num]["-panoid"] == startPano) startPano = null;
+	}
+	delete PCD.Panoramas.Panorama[num];
+	stat = 0;
+}
+
+
+//--------------------------------------------------
+
+
+// 追加用のパノラマ画像リストの取得
+function addMarker(){
+	if(!((stat == 0) || (stat == 1))) return;
+	stat = 2;
+	var mode = "img";
+	var panolist = "//"
+	if((PCD != null) && (PCD.Panoramas.Panorama.length>0)){
+		for(var i=0;i<PCD.Panoramas.Panorama.length;i++){
+			
+			if(PCD.Panoramas.Panorama[i] != null){
+				panolist += PCD.Panoramas.Panorama[i].img["-src"] + "/";
+			}
+		}
+	}
+	var sendData = "mode="+encodeURI(mode);
+	sendData += "&panolist="+encodeURI(panolist);
+	httpObj = createXMLHttpRequest(displayData_img);
+	if (httpObj){
+		httpObj.open("POST","pasq.php",true);
+		httpObj.setRequestHeader('Content-Type','application/x-www-form-urlencoded; charset=utf-8');
+		httpObj.send(sendData);
+	}
+}
+function displayData_img(){
+	if ((httpObj.readyState == 4) && (httpObj.status == 200)){
+		unclickMarker(currentMarker);
+		currentMarker = null;
+		document.getElementById("info").innerHTML = "配置する画像を<br />選択してください<br /><br /><br /><br /><a href=javascript:cansel()>キャンセル</a>";
+		document.getElementById("info2").innerHTML = httpObj.responseText;
+	}
+}
+
+
+// 追加パノラマ画像の選択時に呼出(PHP側から)
+function selectImg(filename){
+	stat = 3;
+	currentImgSrc = filename;
+	document.getElementById("info").innerHTML = "配置する場所を<br />クリックしてください<br /><br /><br /><br /><a href=javascript:cansel()>キャンセル</a>";
+	document.getElementById("info2").innerHTML = "";
+}
+
+
+// パノラマ画像追加時のデータ作成(以下、各要素の作成)
+function newPanorama(px, py){
+	if(PCD == null) PCD = new setPanoramas();
+	var num = PCD.Panoramas.Panorama.length;
+	PCD.Panoramas.Panorama[num] = new setParams(px, py);
+}
+
+function setPanoramas(){
+	this.Panoramas = new setPanorama();
+}
+
+function setPanorama(){
+	this["-startpano"] = startPano;
+	this["-startdir"] = 0;
+	this.Panorama = new Array();
+}
+
+function setParams(px, py){
+	panoid_max++;
+	this["-panoid"] = "pano" + panoid_max;
+	this.img = new setImg();
+	this.coords = new setLatLng(px, py);
+	this.direction = new setNorth();
+
+}
+
+function setImg(){
+	imgSize(currentImgSrc);
+	this["-src"] = currentImgSrc;
+	this["-width"] = currentImgWidth;
+	this["-height"] = currentImgHeight;
+}
+
+function setLatLng(lng, lat){
+	this["-lng"] = lng;
+	this["-lat"] = lat;
+}
+
+function setNorth(){
+	this["-north"] = directionNorth;
+}
+
+
+// 別ウィンドウのPTViewerでパノラマ画像提示
+function openPTViewer(filename){
+	var html = "<html><head><title>PTViewer</title></head><body bgcolor=#000000><div id=applet></div></body></html>";
+	var ptv = "<applet code=ptviewer.class archive=PTViewer.jar width=600 height=300><param name=file value=./resource/" + filename + " /></applet>";
+	
+	var newWin = window.open("","newWin","width=620, height=320, toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no");
+	newWin.document.write(html);
+	newWin.document.getElementById("applet").innerHTML = ptv;
+	newWin.focus();
+}
+
+
+// 画像サイズの取得(PHP利用)
+function imgSize(filename){
+	var mode = "imgsize"
+	filename = "./resource/" + filename;
+	var sendData = "mode="+encodeURI(mode);
+	sendData += "&filename="+encodeURI(filename);
+	httpObj = createXMLHttpRequest(displayData_i);
+	if (httpObj){
+		httpObj.open("POST","pasq.php",false);
+		httpObj.setRequestHeader('Content-Type','application/x-www-form-urlencoded; charset=utf-8');
+		httpObj.send(sendData);
+	}
+}
+function displayData_i(){
+	if ((httpObj.readyState == 4) && (httpObj.status == 200)){
+		var str = httpObj.responseText;
+		var comma = str.indexOf(",");
+		currentImgWidth = str.substring(0, comma);
+		currentImgHeight = str.substring(comma+1, str.length);
+	}
+}
+
+
+// 方位情報設定(一括)用ダイアログの表示
+function setDirection(){
+	var north = prompt("方位情報の初期値？",directionNorth);
+	if(north != null) directionNorth = north;
+}
+
+
+// スタートパノ設定
+function setStartPano(){
+	if(!((stat == 0) || (stat == 1))) return;
+	if(currentMarker) removeChangePanoramas(currentMarker.title);
+	if(!PCD){
+		alert("パノラマ画像を1つ以上配置してください");
+		return;
+	}
+	clearInfo();
+	var html = "スタートパノと<br />初期方位を<br />設定してください<br /><br /><br />"
+		+ "<form name=start>初期方位：<input type=text name=dir size=10 value=" + PCD.Panoramas["-startdir"] + "></form><br />"
+		+ "<a href=javascript:setStartPanoOk()>OK</a>　<a href=javascript:cansel()>キャンセル</a>";
+	document.getElementById("info").innerHTML = html;
+	document.getElementById("info2").innerHTML = "";
+	stat = 4;
+	unclickMarker(currentMarker);
+	if(startPano != null){
+		var num = number[startPano];
+		if(panoMarker[num]){
+			currentMarker = clickMarker2(panoMarker[num]);
+		}
+	}
+}
+
+function setStartPanoOk(){
+	startPano = currentMarker.title;
+	PCD.Panoramas["-startdir"] = document.start.dir.value;
+	unclickMarker(currentMarker);
+	currentMarker = null;
+	document.getElementById("info").innerHTML = "";
+	stat = 0;
+}
+
+
+//////////
+
+// 近傍パノラマの提示処理(マーカーの強調、切替範囲の表示)
+function setChangePanoramas(panoid){
+	if(document.chpano.flag && document.chpano.flag.checked) flag_chpano = true;
+	else flag_chpano = false
+	if(!flag_chpano) return;
+
+	var num = number[panoid];
+	// chpano が1つしかない場合は配列として再構成
+	if(PCD.Panoramas.Panorama[num].chpanos){
+		if((PCD.Panoramas.Panorama[num].chpanos.chpano) && (!PCD.Panoramas.Panorama[num].chpanos.chpano.length)){
+			var tmp = PCD.Panoramas.Panorama[num].chpanos.chpano;
+			PCD.Panoramas.Panorama[num].chpanos = null;
+			newChpano(tmp["-panoid"], tmp.range["-start"], tmp.range["-end"], tmp.fov["-before"], tmp.fov["-after"], tmp.correct["-dir"], tmp.correct["-pitch"]);
+		}
+	}
+
+	rangeLine = new Array();
+	var colorList = [
+		"#000000",
+		"#ff0000",
+		"#00ff00",
+		"#0000ff",
+		"#ffff00",
+		"#ff00ff",
+		"#00ffff"
+	];
+	var count_color = 0;
+	var panox = parseFloat(PCD.Panoramas.Panorama[num].coords["-lng"]);
+	var panoy = parseFloat(PCD.Panoramas.Panorama[num].coords["-lat"]);
+	var lineLength = 20;
+	for(var i = 0; i < PCD.Panoramas.Panorama[num].chpanos.chpano.length; i++){
+		var num2 = number[PCD.Panoramas.Panorama[num].chpanos.chpano[i]["-panoid"]];
+		if(panoMarker[num2]){
+			panoMarker[num2] = clickMarker3(panoMarker[num2]);
+
+			var ldx = lineLength * Math.sin(PCD.Panoramas.Panorama[num].chpanos.chpano[i].range["-start"] * Math.PI / 180);
+			var ldy = lineLength * Math.cos(PCD.Panoramas.Panorama[num].chpanos.chpano[i].range["-start"] * Math.PI / 180);
+			var lx1 = panox + ldx / 6378137 / Math.cos(panoy * Math.PI / 180) * 180 / Math.PI;
+			var ly1 = panoy + ldy / 6378137 * 180 / Math.PI;
+
+			var ldx = lineLength * Math.sin(PCD.Panoramas.Panorama[num].chpanos.chpano[i].range["-end"] * Math.PI / 180);
+			var ldy = lineLength * Math.cos(PCD.Panoramas.Panorama[num].chpanos.chpano[i].range["-end"] * Math.PI / 180);
+			var lx2 = panox + ldx / 6378137 / Math.cos(panoy * Math.PI / 180) * 180 / Math.PI;
+			var ly2 = panoy + ldy / 6378137 * 180 / Math.PI;
+			
+			var points = [new GLatLng(ly1,lx1), new GLatLng(panoy,panox), new GLatLng(ly2,lx2)];
+			var clr = colorList[count_color];
+			count_color = (count_color + 1) % 7;
+			rangeLine[rangeLine.length] = new GPolyline(points, clr);
+			map.addOverlay(rangeLine[rangeLine.length - 1]);
+		}
+	}
+}
+
+// 近傍パノラマの提示終了処理
+function removeChangePanoramas(panoid){
+	if(!flag_chpano) return;
+	if(rangeLine){
+		for(var i = 0; i < rangeLine.length; i++){
+			map.removeOverlay(rangeLine[i]);
+		}
+	}
+	document.getElementById("info0").innerHTML = "";
+	var num = number[panoid];
+	for(var i = 0; i < PCD.Panoramas.Panorama[num].chpanos.chpano.length; i++){
+		var num2 = number[PCD.Panoramas.Panorama[num].chpanos.chpano[i]["-panoid"]];
+		if(panoMarker[num2]){
+			panoMarker[num2] = unclickMarker(panoMarker[num2]);
+		}
+	}
+	currentMarker = panoMarker[num];
+	stat = 1;
+	if(document.chpano.flag && !document.chpano.flag.checked) flag_chpano = false;
+}
+
+function calcNorthOffset(panoid){
+	//calculate offset for north
+	var num = number[panoid]
+	var pw = PCD.Panoramas.Panorama[num].img["-width"];
+	var hw = pw/2;
+	var nw = PCD.Panoramas.Panorama[num].direction["-north"];
+	var northdir = nw/pw*360-180;
+	return northdir;
+}
+//]]>
+
+</script>
+<body text="#ffffff" bgcolor="#000000" link="#ffffff" vlink="#ffffff" alink="#ffffff">
+
+<center>
+<table>
+<tr>
+<td colspan="2" align="left">
+<form name="chpano">
+<a href="javascript:newMap()">新規作成</a>
+　<a href="javascript:XMLMode('load')">読込</a>
+　<a href="javascript:XMLMode('save')">保存</a>
+　<a href="javascript:setDirection()">方位情報設定</a>
+　<a href="javascript:setStartPano()">スタートパノ設定</a>
+　<a href="javascript:addMarker()">パノラマ配置</a>
+　<a href="javascript:setPanoLine()">一括配置</a>
+　<input type="checkbox" name="flag">近傍パノラマ表示</form>
+</td>
+</tr>
+
+<tr><td colspan="2" valign="top" align="center">
+<div id="info0"></div>
+</td></tr>
+
+<tr>
+<td align="right">
+<div id="gmap" style="width: 640px; height: 440px"></div>
+</td>
+<td align="left" valign="top" width="300">
+<div id="info"></div>
+</td>
+</tr>
+
+<tr>
+<td valign="top" align="center">
+<div id="info2"></div>
+</td>
+<td>
+</td>
+</tr>
+</table>
+</center>
+
+</body>
+</html>

@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CCD>
+	<Contents maptype="google">
+
+  <!-- コンテンツ位置：正門 -->
+    <Content contentid="cont13" type="img">
+      <img src="cont13.jpg" thumbsrc="th_cont13.jpg"/>
+      <coords lng="133.78180772066116" lat="34.691002982995435" height="1.5" />
+			<range radius="30" angle_s="0" angle_e="359" />
+      <detail name="正門" /> 
+      <coment>			大学の正門はこちらになります．
+			駅から離れていることと，講義室のある棟が西門寄りということもあり，西門よりは人の往来が少ないようです．
+      なお，本学の校名の右隣に短期大学部の名前がありますが，短期大学部は2007年3月をもって閉学となっています．
+			&lt;a href=content/opu/test.html target=_blank&gt;&lt;img src=content/th_opu_enshutsu.jpg border=0 /&gt;&lt;br /&gt;&lt;b&gt;岡山県立大学紹介を再生&lt;br /&gt;&lt;/b&gt;&lt;/a&gt;
+			</coment>
+    </Content>
+
+  <!-- コンテンツ位置：西門（大学の左上の十字路） -->
+    <Content contentid="cont0" type="img">
+      <img src="cont0.jpg" thumbsrc="th_cont0.jpg"/>
+      <coords lng="133.77743303775787" lat="34.69202187240254" height="1.5" />
+			<range radius="30" angle_s="0" angle_e="359" />
+      <detail name="西門" /> 
+      <coment>最寄り駅であるJR吉備線・服部駅がすぐ近くに見える，キャンパスの出入り口です．
+       学部棟・学部共通棟から近いこともあり，電車や自転車等を利用して通学する学生の行き来が盛んです．
+			</coment>
+    </Content>
+
+  <!-- コンテンツ位置：情報棟の入り口付近，共通棟側 -->
+    <Content contentid="cont4" type="img">
+      <img src="cont4.jpg" thumbsrc="th_cont4.jpg"/>
+      <coords lng="133.77933472394943" lat="34.69228872231752" height="1.5" />
+			<range radius="30" angle_s="0" angle_e="359" />
+      <detail name="情報工学部棟" />
+      <coment>情報工学部の学生が利用する演習室や実験室，研究室などがある建物です．
+      情報工学部は，情報技術を活用して，人間を中心に据えた社会の形成に貢献できる技術者の育成を目指しています．
+			&lt;br /&gt;&lt;a href=content/zyohoto/test.html target=_blank&gt;&lt;img src=content/th_zyohoto_enshutsu.jpg border=0 /&gt;&lt;br /&gt;&lt;b&gt;情報工学部紹介を再生&lt;br /&gt;&lt;/b&gt;&lt;/a&gt;
+
+			&lt;br /&gt;&lt;br /&gt;&lt;br /&gt;&lt;b&gt;情報数理工学研究室&lt;/b&gt; &lt;br /&gt;
+      情報数理学研究室では，現実に存在する様々な問題をコンピュータにより解決させるための方法
+			（アルゴリズム）を研究しています．例えば，トラックで荷物を集配するときの効率的な道順を見つける問題，
+			デジタル画像中から特定の対象物を検知・抽出する問題などについて，有効なアルゴリズムの開発に
+			取り組んでいます． 
+
+			&lt;br /&gt;&lt;br /&gt;&lt;br /&gt;&lt;b&gt;情報文化学研究室&lt;/b&gt; &lt;br /&gt;
+			文学作品（英米文学）をコンピュータに入力し，言語情報を数量的に分析し，情報工学が文学研究に
+			役立つことを検証しています．また，インターネット上の様々な「情報文化」を多角的な視点から研究しています．
+
+			&lt;br /&gt;&lt;br /&gt;&lt;br /&gt;&lt;b&gt;通信伝送工学研究室&lt;/b&gt; &lt;br /&gt;
+			携帯電話や無線LANなどの通信サービスにおいて，効率よく通信を行うための仕組みや，
+			情報を正確に伝達するための技術について研究をしています．
+
+			&lt;br /&gt;&lt;br /&gt;&lt;br /&gt;&lt;b&gt;波動情報工学研究室&lt;/b&gt; &lt;br /&gt;
+			波動情報工学研究室では，社会を支えるGHz技術を目指し，電波を用いて物の形や位置の情報を
+			検知・映像化する技術(自動車衝突防止レーダ，ナビゲーションシステム等)の開発や各種電波システムの
+			構築に必要なマイクロ波集積回路技術に関する研究・開発(フェライトデバイス，負屈折率の人工媒質を用いた
+			素子)を行っています．
+
+			&lt;br /&gt;&lt;br /&gt;&lt;br /&gt;&lt;b&gt;通信システム工学研究室&lt;/b&gt; &lt;br /&gt;
+			近年，人がやりとりする情報が多種多様になるにつれ，ネットワークは身近にある様々なもの
+			(コンピュータ，ケータイ，家電など)を巻き込みながら，大規模に，また複雑になっています．
+			通信システム工学研究室では，人と人とが快適に通信を行うために，ネットワークが抱えている様々な
+			技術的問題について研究を行っています．
+
+			&lt;br /&gt;&lt;br /&gt;&lt;br /&gt;&lt;b&gt;集積回路工学研究室&lt;/b&gt; &lt;br /&gt;
+			集積回路工学研究室では，現代生活に必要不可欠な基盤技術である集積回路（LSI)技術について
+			研究しています．集積回路の安定動作に必要な定電圧回路，ユビキタス情報化社会の基盤技術となる
+			タグチップ，新しい回路方式によるメディアプロセッサなどを対象とし，設計・試作・検証を通して
+			研究・開発を行っています．
+
+			&lt;br /&gt;&lt;br /&gt;&lt;br /&gt;&lt;b&gt;光応用システム工学研究室&lt;/b&gt; &lt;br /&gt;
+			操選手の鉄棒運動のようなアクロバット演技を実現するロボットを実際に製作して，
+			私たちが開発した制御方法の確かめと，理論だけでは捕らえるのが難しいさまざまな問題点を調査し，
+			制御方法の改良・改善を図っています．
+			</coment>
+    </Content>
+
+  <!-- コンテンツ位置：デザイン学部棟中央 -->
+    <Content contentid="cont1" type="img">
+      <img src="cont1.jpg" thumbsrc="th_cont1.jpg"/>
+      <coords lng="133.77869099378586" lat="34.692017461652924" height="1.5" />
+			<range radius="30" angle_s="0" angle_e="359" />
+      <detail name="デザイン学部棟" /> 
+      <coment>デザイン学部の学生が利用する講義室や演習室，研究室等がある建物です．
+      デザイン学部は，人間・社会・自然の関係性を重視する立場から，造形を通じてこれらの関係構築や改善に挑むことの出来る，
+      高い志と美的創造力にあふれた，社会にとって有為な人材の育成を目指しています．</coment>
+    </Content>
+
+  <!-- コンテンツ位置：アトリエ棟中央 -->
+    <Content contentid="cont2" type="img">
+      <img src="cont2.jpg" thumbsrc="th_cont2.jpg"/>
+      <coords lng="133.77853274345398" lat="34.69228431158213" height="1.5" />
+			<range radius="30" angle_s="0" angle_e="359" />
+      <detail name="アトリエ棟" /> 
+      <coment>課題や自主作品の製作などが行える，デザイン学部の学生の創作の場です．
+			木材，金属，テキスタイルなど素材別の7つの工房を中心に構成されています．
+			</coment>
+    </Content>
+
+  <!-- コンテンツ位置：保福棟の入り口付近，共通棟側 -->
+    <Content contentid="cont7" type="img">
+      <img src="cont7.jpg" thumbsrc="th_cont7.jpg" />
+      <coords lng="133.7794527411461" lat="34.691166182575195" height="1.5" />
+			<range radius="30" angle_s="0" angle_e="359" />
+      <detail name="保健福祉学部棟"/> 
+      <coment>保健福祉学部の学生が利用する講義室や実験室，研究室などがある建物です．
+      地域社会の人々の，健康と福祉の増進に積極的に貢献できること．人を支援する心を持ち，豊かな人間性にあふれていること．
+      保健福祉学部が目指すのは，このような人材の育成です．
+			</coment>
+    </Content>
+
+  <!-- コンテンツ位置：共通棟西の凹んだ所 -->
+    <Content contentid="cont3" type="img">
+      <img src="cont3.jpg" thumbsrc="th_cont3.jpg"/>
+      <coords lng="133.7785005569458" lat="34.69112869080832" height="1.5" />
+			<range radius="30" angle_s="0" angle_e="359" />
+      <detail name="学部共通棟（西）"/> 
+      <coment>3つある学部共通棟の内の一つです．2006年度までは短期大学部棟として使われていました．
+      学部共通棟（南）と通路で連結されています．
+			</coment>
+    </Content>
+
+  <!-- コンテンツ位置：共通棟北の中央 -->
+    <Content contentid="cont5" type="img">
+      <img src="cont5.jpg" thumbsrc="th_cont5.jpg"/>
+      <coords lng="133.77950638532638" lat="34.69203731002438" height="1.5" />
+			<range radius="30" angle_s="0" angle_e="359" />
+      <detail name="学部共通棟（北）" /> 
+      <coment>3つある学部共通棟の内の一つです．日々様々な講義が行われています．
+			1階には主に120人，2階には50ないし200人の収容人数をもつ講義室があります．
+      2階の通路により，デザイン学部棟・情報工学部棟・学部共通棟（南）と連結されています．
+			</coment>
+    </Content>
+
+  <!-- コンテンツ位置：共通棟南の凹んだ所 -->
+    <Content contentid="cont6" type="img">
+      <img src="cont6.jpg" thumbsrc="th_cont6.jpg"/>
+      <coords lng="133.77909064292908" lat="34.691406570559366" height="1.5" />
+			<range radius="30" angle_s="0" angle_e="359" />
+      <detail name="学部共通棟（南）" /> 
+      <coment>3つある学部共通棟の内の一つです．1階には保健福祉学部関連の各種実習室があります．
+			また，2階には収容人数300人の大講義室があり，受講生の多い講義はこちらでよく行われています．
+			保健福祉学部棟・学部共通棟（北・西）と通路で連結されています．
+      </coment>
+    </Content>
+
+  <!-- コンテンツ位置：学生会館中央 -->
+    <Content contentid="cont8" type="img">
+      <img src="cont8.jpg" thumbsrc="th_cont8.jpg"/>
+      <coords lng="133.77996504306793" lat="34.692330624292154" height="1.5" />
+			<range radius="30" angle_s="0" angle_e="359" />
+      <detail name="学生会館" /> 
+      <coment>1階には食堂，2階に喫茶，売店といった福利施設があります．
+			食堂は452席あり，明るく開放的なスペースで，ランチや一品料理，麺類などの豊富なメニューを味わうことが出来ます．
+			喫茶は132席あり，飲み物だけでなく食事もでき，落ち着いた雰囲気の中で会話を楽しむことが出来ます．
+			また，売店では，食料品から日用雑貨まで多様な品目を取り扱っています．
+			2階のロビーでは食事を採りながら談笑する学生の姿がよく見られます．
+			</coment>
+    </Content>
+
+  <!-- コンテンツ位置：図書館中央 -->
+    <Content contentid="cont9" type="img">
+      <img src="cont9.jpg" thumbsrc="th_cont9.jpg"/>
+      <coords lng="133.78065705299377" lat="34.69174178933499" height="1.5" />
+			<range radius="30" angle_s="0" angle_e="359" />
+      <detail name="図書館" /> 
+      <coment>知識の宝庫．そんな言葉がぴったりな本学の図書館．
+      モダンな建物の中にはあらゆるジャンルの文献，書籍，雑誌などが充実し，知を深めるための理想的な空間が広がっています．
+      1・2階合わせて2,628㎡のフロアには，現在191,000冊の図書，310種の新刊雑誌，4,150本のAV資料を所蔵しており，
+      全面開架の書棚でそのほとんどを利用者が手にとって見ることが出来るようになっています．
+			</coment>
+    </Content>
+
+  <!-- コンテンツ位置：本部棟中央 -->
+    <Content contentid="cont12" type="img">
+      <img src="cont12.jpg" thumbsrc="th_cont12.jpg"/>
+      <coords lng="133.781595826149" lat="34.692189480714106" height="1.5" />
+			<range radius="30" angle_s="0" angle_e="359" />
+      <detail name="本部棟" /> 
+      <coment>学生生活に関する様々な手続きなどはこちらで．
+      他にも住まいやアルバイトに関する情報の提供も行われており，それらの情報が掲示板に掲示されています．
+			また，1階の就職資料室には，就職関係の各種情報や参考書，雑誌など，多数の資料がそろえてあります．
+      1階西側の入り口を入ってすぐの位置に保健室もあります．
+			</coment>
+    </Content>
+
+  <!-- コンテンツ位置：講堂入り口付近 -->
+    <Content contentid="cont14" type="img">
+      <img src="cont14.jpg" thumbsrc="th_cont14.jpg"/>
+      <coords lng="133.78081530332565" lat="34.6925555713722" height="1.5" />
+			<range radius="30" angle_s="0" angle_e="359" />
+      <detail name="講堂" /> 
+      <coment>
+			正門をくぐって大通りを進んでいくと，本学の講堂が見えてきます．
+			普段の講義では立ち入る機会は多くないのですが，全学生を対象とした講演や，専門分野の研究発表の場などに用いられます．
+      大学祭の時には，構内のステージにて音楽系サークルのコンサートが行われたり，講堂前の階段で催しが行われたりします．
+      </coment>
+    </Content>
+
+  <!-- コンテンツ位置：体育館入り口付近 -->
+    <Content contentid="cont15" type="img">
+      <img src="cont15.jpg" thumbsrc="th_cont15.jpg"/>
+      <coords lng="133.78197133541107" lat="34.69334288133793" height="1.5" />
+			<range radius="30" angle_s="0" angle_e="359" />
+      <detail name="体育館" /> 
+      <coment>屋内の運動施設です．球技やダンス，器械運動などの出来る環境が整っています．
+			放課後には体育系のサークルが活動している姿が見受けられます．
+			4月の入学式，及び3月の卒業式はこちらで執り行われます．
+      </coment>
+    </Content>
+
+  <!-- コンテンツ位置：部室棟入り口付近 -->
+    <Content contentid="cont16" type="img">
+      <img src="cont16.jpg" thumbsrc="th_cont16.jpg"/>
+      <coords lng="133.7824273109436" lat="34.693003258349634" height="1.5" />
+			<range radius="30" angle_s="0" angle_e="359" />
+      <detail name="部室棟" /> 
+      <coment>サークルの部室がある棟です．
+      サークルの中にはここの部室にて活動を行っているところもあります．
+			なお，2007年現在のサークル数は，体育会28団体，文化会29団体となっています．
+      </coment>
+    </Content>
+
+  <!-- コンテンツ位置：共通棟南の斜め角のそば -->
+    <Content contentid="cont17" type="img">
+      <img src="cont17.jpg" thumbsrc="th_cont17.jpg"/>
+      <coords lng="133.77957075834274" lat="34.691554331634364" height="1.5" />
+			<range radius="30" angle_s="0" angle_e="359" />
+      <detail name="語学センター" /> 
+      <coment>学生が使える英語を習得できるようにさまざまな支援体制を整えています．
+      学内LANを利用した英語の自主学習がいつでもどこでも可能です．
+      センターではTAによる英会話の個人及びグループ指導，英検・TOEIC・TOEFL等の各種試験対策，
+      名作映画館紹介，語学学習テープ，ビデオ・DVDの館内貸し出しなどを行っています．
+			</coment>
+    </Content>
+
+  <!-- コンテンツ位置：噴水中央，噴水画像のある所 -->
+    <Content contentid="cont10" type="img">
+      <img src="cont10.jpg" thumbsrc="th_cont10.jpg"/>
+      <coords lng="133.78110498189926" lat="34.692112292718036" height="1.0" />
+			<range radius="30" angle_s="0" angle_e="359" />
+      <detail name="噴水" /> 
+      <coment>昼頃には水が噴き出しているのを見ることが出来るでしょう．
+			太陽の角度によっては虹が見えることも．
+			また，噴水のそばには照明が取り付けられており，大学祭の時には，日が沈んだ頃にライトアップされます．
+			その光景はとても幻想的です．
+      </coment>
+    </Content> 
+
+  <!-- コンテンツ位置：学生会館の右隣 -->
+    <Content contentid="cont11" type="img">
+      <img src="cont11.jpg" thumbsrc="th_cont11.jpg"/>
+      <coords lng="133.78034055233002" lat="34.692403401355534" height="0.5" />
+			<range radius="30" angle_s="0" angle_e="359" />
+      <detail name="芝生" /> 
+      <coment>食堂のそばにある芝生．周囲には桜の木が植えられており，
+      桜の時期にはベンチに腰掛けて昼食を採る学生の姿が見受けられます．
+			</coment>
+    </Content>
+
+  <!-- コンテンツ位置：学生会館右端 -->
+    <Content contentid="cont18" type="img">
+      <img src="cont18.jpg" thumbsrc="th_cont18.jpg"/>
+      <coords lng="133.7799409031868" lat="34.69224902569042" height="0.5" />
+			<range radius="30" angle_s="0" angle_e="359" />
+      <detail name="学生会館前"/> 
+      <coment>食堂前のこのスペースでは，時々昼休みの時間帯にサークルの催しが行われます．
+      音楽系のサークルの歌や演奏，ダンスサークルのパフォーマンスなどがよく行われています．
+			</coment>
+    </Content>
+
+	</Contents>
+</CCD>

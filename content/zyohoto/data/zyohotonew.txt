@@ -1,0 +1,17 @@
+zyohoto("î•ñHŠw•”")=[
+Index("î•ñHŠw•”“");
+Speak("explain1.mp3",_, _);
+Index("ŠeŒ¤‹†º");
+Speak("explain2.mp3",_, _);
+Index("Œ¤‹†º“üŒû");
+Replace("D-Cubis.jpg", "fade");
+Speak("explain3.mp3",_, _);
+Index("D-Cubis");
+Speak("explain4.mp3",_, _);
+Index("PasQ");
+Replace("PasQ.jpg", "fade");
+Speak("explain5.mp3",_, _);
+Index("e-learning");
+Replace("image2.jpeg", "fade");
+Speak("explain6.mp3",_, _);
+]
