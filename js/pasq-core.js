@@ -17,7 +17,7 @@ var bmdFileName = "";
 var pcdFileName = "";
 var ccdFileName = "";
 
-var meta = new JKL.ParseXML(basePath + metaFileName);;
+var meta = new JKL.ParseXML(basePath + metaFileName);
 var bmd;
 var pcd;
 var ccd;
@@ -39,8 +39,18 @@ nowStat.panoid = "";
 nowStat.offsetNorth = "";
 nowStat.arLink = [];
 
+
+
+
 var firstfov = 105;
 var firstpan = 0;
+
+//後退切替用パラメータ
+var previousStat = {};
+previousStat.fov_next = 105;
+previousStat.panoid = "";
+
+
 
 //////////
 // panoidからPanorama配列の添え字を逆引するための配列
@@ -57,6 +67,9 @@ var tmp_f = 105;
 
 // 前進動作継続用フラグ
 var flag_click = false;
+
+//後退動作継続用フラグ
+var flag_click_back = false;
 //////////
 
 // ================================================================
@@ -234,6 +247,7 @@ function makeParamTagElement(name, value){
 function checkAllReady(){
 	if(isBMDloaded && isPCDloaded){
 
+	//map-decolation.jsのopuMap関数 　てか、下の一行いらないと思う byハマノ
 		opuMap();
 
 		startCalculate();
@@ -339,21 +353,62 @@ function getview(p,t,f){
 	angleOfView(PCDobj.Panoramas.Panorama[num].coords.lng, PCDobj.Panoramas.Panorama[num].coords.lat, p, f);
 //////////
 
+	
 	if(nowStat.arLink[round0360(p-nowStat.offsetNorth)] != undefined){
 		var targetpano = nowStat.arLink[round0360(p-nowStat.offsetNorth)];
-
+		
 		for(var i = 0; i < PCDobj.Panoramas.Panorama[num].chpanos.chpano.length; i++){
 			if(PCDobj.Panoramas.Panorama[num].chpanos.chpano[i].panoid == targetpano){
-				if(f <= parseFloat(PCDobj.Panoramas.Panorama[num].chpanos.chpano[i].fov.base)){
+				//視野角fが設定値以下になったときパノラマ画像を切替
+				if(f < parseFloat(PCDobj.Panoramas.Panorama[num].chpanos.chpano[i].fov.base)){
 					var id = PCDobj.Panoramas.Panorama[num].chpanos.chpano[i].panoid;
 					// パン角の補正
 					p = (p-nowStat.offsetNorth+calcNorthOffset(id)) - PCDobj.Panoramas.Panorama[num].chpanos.chpano[i].correct.pan;
 					// チルト角の補正
 					t = t - PCDobj.Panoramas.Panorama[num].chpanos.chpano[i].correct.tilt;
-						
+					
+					//後退切替を可能にするためにback_nextに切替視野角を格納
+					previousStat.fov_next = parseFloat(PCDobj.Panoramas.Panorama[num].chpanos.chpano[i].fov.next);
+					previousStat.panoid = nowStat.panoid;
+					
+					//切替後のパノラマ画像のpanoid,p,t,切替後の視野角を与えて、画像切替
 					changePano(id,p,t,parseFloat(PCDobj.Panoramas.Panorama[num].chpanos.chpano[i].fov.next));
 				}
 			}
+		}
+	}
+				
+	////////////////////////////////////////////後退切替処理
+	//現在の方位から反対方向(つまり、+180度)に切り替えるパノラマを調査
+	//あれば、次にそのパノラマから現在のパノラマへの切換視野角を調査
+	//切換視野角がわかれば、その切換視野角で切換え。
+	//わからなければ、固定値で切換え(無限に前後での切換が発生する可能性あり)
+	　	
+	//視野角が切り替えたときの値より大きいときは後退切替判定を行う
+	if(f > previousStat.fov_next){
+		var back_panoid = nowStat.arLink[round0360(p-nowStat.offsetNorth + 180)];//180度反対の切換panoidを得る
+		var back_panoid_num = number[back_panoid];
+		//現在の方位の反対方向(180度回転)に切換パノラマがある
+		if(back_panoid !== null){
+			var back_fov = -1;
+			//後退切換パノラマから現在のパノラマへの切換視野角を調査
+			for(var j=0;j<PCDobj.Panoramas.Panorama[back_panoid_num].chpanos.chpano.length; j++){
+				if(PCDobj.Panoramas.Panorama[back_panoid_num].chpanos.chpano[j].panoid === nowStat.panoid){
+					back_fov = parseFloat(PCDobj.Panoramas.Panorama[back_panoid_num].chpanos.chpano[j].fov.base);
+					back_chpano_num = j;
+				}
+			}
+			//後退切換パノラマから現在のパノラマへの切換がないとき、切換視野角がわからないため、適当な値を与える
+			if(back_fov == -1){
+				back_fov = 85;
+			}
+			
+			//画像の切換え
+			//パン角の補正
+			p = (p-nowStat.offsetNorth+calcNorthOffset(back_panoid)) - PCDobj.Panoramas.Panorama[num].chpanos.chpano[back_chpano_num].correct.pan;
+			//チルト角の補正
+			t = t - PCDobj.Panoramas.Panorama[num].chpanos.chpano[back_chpano_num].correct.tilt;
+			changePano(back_panoid,p,t,back_fov);
 		}
 	}
 	
@@ -385,6 +440,7 @@ function changePano(panoid,p,t,f){
 
 	appPTV.newPano(str, p, t, f);
 	
+		
 	tmp_ua = 370;
 	removeObject(centerMarker);
 	centerMarker = setCenterMarker(PCDobj.Panoramas.Panorama[num].coords.lng, PCDobj.Panoramas.Panorama[num].coords.lat);
@@ -392,6 +448,7 @@ function changePano(panoid,p,t,f){
 	angleOfView(PCDobj.Panoramas.Panorama[num].coords.lng, PCDobj.Panoramas.Panorama[num].coords.lat, p, f);
 
 	if(flag_click == true) appPTV.startAutoPan( 0.0, 0.0, 1.0/1.025 );
+	if(flag_click_back === true) appPTV.startAutoPan(0.0,0.0,1.025);
 }
 
 function calcHS(panoid){
@@ -539,11 +596,13 @@ function DoZoomIn()
 }
 function DoZoomOut()
 {
+	flag_click_back = true;
 	appPTV.startAutoPan( 0.0, 0.0, 1.025 );
 }
 function DoStop()
 {
 	flag_click = false;
+	flag_click_back = false;
 	appPTV.stopAutoPan();
 }
 
