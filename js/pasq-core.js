@@ -78,10 +78,10 @@ var flag_click_back = false;
 // start
 
 function startload(){
-	var func = function(data){
+	var funcMeta = function(data){
 		onloadMeta(data);
-	}
-	meta.async(func);
+	};
+	meta.async(funcMeta);
 	meta.parse();
 }
 
@@ -92,32 +92,33 @@ function onloadMeta(data){
 	bmdFileName = metaData.PasQ.InitialDataUrl.BMD.src;
 	pcdFileName = metaData.PasQ.InitialDataUrl.PCD.src;
 	// コンテンツがない場合はメタファイルのCCDを省略 or CCD.srcを空文字に
-	if(metaData.PasQ.InitialDataUrl.CCD) ccdFileName = metaData.PasQ.InitialDataUrl.CCD.src;
-	
+	if(metaData.PasQ.InitialDataUrl.CCD){
+		ccdFileName = metaData.PasQ.InitialDataUrl.CCD.src;
+	}
 	//BMDファイル読込
 	bmd = new JKL.ParseXML(basePath+bmdFileName);
-	var func = function(data){	
+	var funcBMD = function(data){	
 		onloadBMD(data);
-	}
-	bmd.async(func);	
+	};
+	bmd.async(funcBMD);	
 	bmd.parse();
 	
 	//PCDファイル読込
 	pcd = new JKL.ParseXML(basePath + pcdFileName);
-	var func = function(data){
+	var funcPCD = function(data){
 		onloadPCD(data);
-	}
-	pcd.async(func);
+	};
+	pcd.async(funcPCD);
 	pcd.parse();
 	
 	
 	// CCDファイルがある場合、CCDファイル読込
 	if(ccdFileName){
 		ccd = new JKL.ParseXML(basePath+ccdFileName);
-		var func = function(data){	
+		var funcCCD = function(data){	
 			onloadCCD(data);
-		}
-		ccd.async(func);
+		};
+		ccd.async(funcCCD);
 		ccd.parse();
 	}
 	else{
@@ -201,29 +202,32 @@ function makeAppletTag(){
  */
 function makeParamTag(aptag){
 	// PCDファイルからの初期方位の暫定値
-	if(PCDobj.Panoramas.startdir) firstpan = parseInt(PCDobj.Panoramas.startdir);
-	else firstpan = 0;
-
+	if(PCDobj.Panoramas.startdir){
+		firstpan = parseInt(PCDobj.Panoramas.startdir,10);
+	}else{
+		firstpan = 0;
+	}
 	// アドレスパラメータからの初期パノラマ・初期方位を設定
 	if(window.location.search){
 		var str = window.location.search;
 		
 		// 初期パノラマの指定のみ
 		if(str.indexOf("&") == -1){
-			PCDobj.Panoramas.startpano = str.substring(str.indexOf("id=") + 3);
+			PCDobj.Panoramas.startpano = str.substring(str.indexOf("id=",0) + 3);
 		}
 		
 		// 初期パノラマ・初期方位の両方を指定
 		else{
 			PCDobj.Panoramas.startpano = str.substring(str.indexOf("id=") + 3, str.indexOf("&"));
-			firstpan = parseInt(str.substring(str.indexOf("dir=") + 4));
+			firstpan = parseInt(str.substring(str.indexOf("dir=",0) + 4),10);
 		}
 	}
 
 	// 初期方位をPTViewerに渡すためのパン角に変換
 	firstpan = (calcNorthOffset(PCDobj.Panoramas.startpano) + firstpan) % 360;
-	if(firstpan > 180) firstpan -= 360;
-
+	if(firstpan > 180){
+		firstpan -= 360;
+	}
 	// スタートパノの登録
 	var paramtag = makeParamTagElement("file", basePath + PCDobj.Panoramas.Panorama[number[PCDobj.Panoramas.startpano]].img.src);
 	aptag.appendChild(paramtag);
@@ -271,9 +275,9 @@ function startCalculate(){
 
 	// マップにコンテンツを設定 (ある場合のみ)
 	if(isCCDloaded){
-		var html = '<form name="content"><a href="javascript:contentIchiran();">コンテンツを一覧表示</a><br />'
-			 + '<select name="contentlist" size="10"></select><br />'
-			 + '<input type="button" value="コンテンツの近くへ移動" onclick="gotoContent(-1)" /></form>';
+		var html = '<form name="content"><a href="javascript:contentIchiran();">コンテンツを一覧表示</a><br />' +
+			 '<select name="contentlist" size="10"></select><br />' +
+			 '<input type="button" value="コンテンツの近くへ移動" onclick="gotoContent(-1)" /></form>';
 		document.getElementById("area_content").innerHTML = html;
 		
 		var alphabet = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"];
@@ -334,17 +338,18 @@ function calcStatArLink(){
 	}
 	
 	for(var i = 0; i < PCDobj.Panoramas.Panorama[num].chpanos.chpano.length; i++){
-		var sd = parseInt(PCDobj.Panoramas.Panorama[num].chpanos.chpano[i].range.start);
-		var ed = parseInt(PCDobj.Panoramas.Panorama[num].chpanos.chpano[i].range.end);
+		var sd = parseInt(PCDobj.Panoramas.Panorama[num].chpanos.chpano[i].range.start,10);
+		var ed = parseInt(PCDobj.Panoramas.Panorama[num].chpanos.chpano[i].range.end,10);
+		var j;
 		if(sd > ed){ // 0度をまたぐとき
-			for(var j=sd; j<=359; j++){
+			for(j=sd; j<=359; j++){
 				arLink[j] = PCDobj.Panoramas.Panorama[num].chpanos.chpano[i].panoid;
 			}
-			for(var j=0; j<=ed; j++){
+			for(j=0; j<=ed; j++){
 				arLink[j] = PCDobj.Panoramas.Panorama[num].chpanos.chpano[i].panoid;
 			}
 		}else{
-			for(var j=sd; j<=ed; j++){
+			for(j=sd; j<=ed; j++){
 				arLink[j] = PCDobj.Panoramas.Panorama[num].chpanos.chpano[i].panoid;
 			}
 		}
@@ -389,16 +394,14 @@ function getview(p,t,f){
 	//全探索で今の方位で現在のパノラマ画像に切り替わるリストを作成
 	//そのリストの中に一つ前のパノラマがあれば、それに切換え
 	//なければ、リストの一番目に切換え
-	
-	　	
+
+
 	//視野角が切り替えたときの値より大きいときは後退切替判定を行う
 	if(f > previousStat.fov_next){
 		//画像における位置を示す角度pを方位を示すtemp_pに変換する
-		temp_p = p - calcNorthOffset(nowStat.panoid);
+		var temp_p = p - calcNorthOffset(nowStat.panoid);
 		if(temp_p<0){
-			var temp_p = temp_p+360;
-		}else{
-			var temp_p = temp_p;
+			temp_p = temp_p+360;
 		}
 		
 		var count=0;
@@ -436,13 +439,13 @@ function getview(p,t,f){
 		//後退切換画像があるとき、後退切替の画像候補の中から適切なものを探す
 		else{
 			//後退切替候補の中に現在の状態に切替える前のpanoidが含まれれば、それを後退切替画像とする
-			for(var i=0;i<count;i++){
+			for(i=0;i<count;i++){
 				if(back_panoidList[i] == previousStat.panoid){
 					back_panoid = previousStat.panoid;
 				}
 			}
 			//後退切替広報の中に現在の状態に切替える前のpanoidが含まれていないとき、とりあえずbacki_panoidListの一番目を後退切替画像とする
-			if(back_panoid == ""){
+			if(back_panoid === ""){
 				back_panoid = back_panoidList[0];
 			}
 		}
@@ -451,7 +454,7 @@ function getview(p,t,f){
 		var temp_num_chpano;
 		var temp_backid = number[back_panoid];
 		
-		for(var j=0;j<PCDobj.Panoramas.Panorama[temp_backid].chpanos.chpano.length;j++){
+		for(j=0;j<PCDobj.Panoramas.Panorama[temp_backid].chpanos.chpano.length;j++){
 			if(PCDobj.Panoramas.Panorama[temp_backid].chpanos.chpano[j].panoid == nowStat.panoid){
 				temp_num_chpano = j;
 			}
@@ -468,9 +471,9 @@ function getview(p,t,f){
 
 function changePano(panoid,p,t,f){
 	
-	var p = (p)? p: 0;
-	var t = (t)? t: 0;
-	var f = (f)? f: 105;
+	p = (p)? p: 0;
+	t = (t)? t: 0;
+	f = (f)? f: 105;
 
 	calcNowStat(panoid);
 	
@@ -489,7 +492,9 @@ function changePano(panoid,p,t,f){
 	// hotspotの動的追加
 	var hsList = calcHS(panoid);
 	if(hsList.length){
-		for(var i = 0; i < hsList.length; i++) str += "{hotspot" + i + "=" + hsList[i] + "}";
+		for(var i = 0; i < hsList.length; i++){
+			str += "{hotspot" + i + "=" + hsList[i] + "}";
+		}
 	}
 
 	appPTV.newPano(str, p, t, f);
@@ -501,8 +506,12 @@ function changePano(panoid,p,t,f){
 	goCenter(PCDobj.Panoramas.Panorama[num].coords.lng, PCDobj.Panoramas.Panorama[num].coords.lat);
 	angleOfView(PCDobj.Panoramas.Panorama[num].coords.lng, PCDobj.Panoramas.Panorama[num].coords.lat, p, f);
 
-	if(flag_click == true) appPTV.startAutoPan( 0.0, 0.0, 1.0/1.025 );
-	if(flag_click_back === true) appPTV.startAutoPan(0.0,0.0,1.025);
+	if(flag_click === true){
+		appPTV.startAutoPan( 0.0, 0.0, 1.0/1.025 );
+	}
+	if(flag_click_back === true){
+		appPTV.startAutoPan(0.0,0.0,1.025);
+	}
 }
 
 function calcHS(panoid){
@@ -524,7 +533,7 @@ function calcHS(panoid){
 	if(isCCDloaded){
 		var lng1 = parseFloat(PCDobj.Panoramas.Panorama[num].coords.lng) * Math.PI / 180;
 		var lat1 = parseFloat(PCDobj.Panoramas.Panorama[num].coords.lat) * Math.PI / 180;
-		for(var i=0;i<CCDobj.Contents.Content.length;i++){
+		for(i=0;i<CCDobj.Contents.Content.length;i++){
 			var lng2 = parseFloat(CCDobj.Contents.Content[i].coords.lng) * Math.PI / 180;
 			var lat2 = parseFloat(CCDobj.Contents.Content[i].coords.lat) * Math.PI / 180;
 			var dx = 6378137 * (lng2 - lng1) * Math.cos(lat1);
@@ -540,21 +549,25 @@ function calcHS(panoid){
 				var sd = parseFloat(CCDobj.Contents.Content[i].range.angle_s);
 				var ed = parseFloat(CCDobj.Contents.Content[i].range.angle_e);
 				if(ed < sd){ // 有効範囲が0°をまたぐ場合
-					if((tmp_dir >= sd) || (tmp_dir <= ed)) flag_content = true; 
+					if((tmp_dir >= sd) || (tmp_dir <= ed)){
+						flag_content = true;
+					}
 				}
-				else{
-					if((tmp_dir >= sd) && (tmp_dir <= ed)) flag_content = true;
+				else if((tmp_dir >= sd) && (tmp_dir <= ed)){
+					flag_content = true;
 				}
 				
 				// コンテンツの有効範囲内であればhotspotの作成
 				// 現在はコンテンツへの方位から推測した位置にコンテンツ名称の表示
 				// コンテンツに高さ情報があれば、パノラマ画像の高さ(現在1.5m固定)と比較し縦方向の位置も推測(なければ画像中央)
 				if(flag_content){
-					var pos_x = Math.floor((parseInt(PCDobj.Panoramas.Panorama[num].direction.north) + dir * parseInt(PCDobj.Panoramas.Panorama[num].img.width) / 360) % parseInt(PCDobj.Panoramas.Panorama[num].img.width));
-					if(CCDobj.Contents.Content[i].coords.height != undefined)
-						var pos_y = parseInt(PCDobj.Panoramas.Panorama[num].img.height) / 2 - (Math.atan2(parseFloat(CCDobj.Contents.Content[i].coords.height) - 1.5, dist) / (Math.PI / 2) * (parseInt(PCDobj.Panoramas.Panorama[num].img.width) / 4));
-					else
-						var pos_y = parseInt(PCDobj.Panoramas.Panorama[num].img.height) / 2;
+					var pos_x = Math.floor((parseInt(PCDobj.Panoramas.Panorama[num].direction.north,10) + dir * parseInt(PCDobj.Panoramas.Panorama[num].img.width,10) / 360) % parseInt(PCDobj.Panoramas.Panorama[num].img.width,10));
+					var pos_y;
+					if(CCDobj.Contents.Content[i].coords.height != undefined){
+						pos_y = parseInt(PCDobj.Panoramas.Panorama[num].img.height,10) / 2 - (Math.atan2(parseFloat(CCDobj.Contents.Content[i].coords.height) - 1.5, dist) / (Math.PI / 2) * (parseInt(PCDobj.Panoramas.Panorama[num].img.width,10) / 4));
+					}else{
+						pos_y = parseInt(PCDobj.Panoramas.Panorama[num].img.height,10) / 2;
+					}
 					var hsStr = "x" + Math.floor(pos_x) + " y" + Math.floor(pos_y) + " i'" + CCDobj.Contents.Content[i].detail.name + "' cffffff e u'javascript:contentWindow(" + i + ")' q";
 					hsList[hsList.length] = hsStr;
 				}
@@ -671,7 +684,9 @@ function markerAction(i){
 
 // コンテンツに最も近いパノラマ画像への移動
 function gotoContent(num){
-	if(num == -1) num = document.content.contentlist.selectedIndex;
+	if(num == -1){
+		num = document.content.contentlist.selectedIndex;
+	}
 	if(num != -1){
 		var panoramaArray = new Array();
 		var lng2 = parseFloat(CCDobj.Contents.Content[num].coords.lng) * Math.PI / 180;
@@ -687,10 +702,10 @@ function gotoContent(num){
 		panoramaArray.sort(compByDistanceAsc);
 
 		var pano_num = number[panoramaArray[0][0]];
-		var lng1 = parseFloat(PCDobj.Panoramas.Panorama[pano_num].coords.lng) * Math.PI / 180;
-		var lat1 = parseFloat(PCDobj.Panoramas.Panorama[pano_num].coords.lat) * Math.PI / 180;
-		var dx = 6378137 * (lng2 - lng1) * Math.cos(lat1);
-		var dy = 6378137 * (lat2 - lat1);
+		lng1 = parseFloat(PCDobj.Panoramas.Panorama[pano_num].coords.lng) * Math.PI / 180;
+		lat1 = parseFloat(PCDobj.Panoramas.Panorama[pano_num].coords.lat) * Math.PI / 180;
+		dx = 6378137 * (lng2 - lng1) * Math.cos(lat1);
+		dy = 6378137 * (lat2 - lat1);
 		var dir = Math.atan2(dx, dy);
 		dir = dir * 180 / Math.PI;
 		dir = (360 + dir) % 360;
@@ -716,7 +731,9 @@ function contentWindow(num){
 
 // コンテンツの一覧表示
 function contentIchiran(){
-	if(isCCDloaded == false) return;
+	if(isCCDloaded === false){
+		return;
+	}
 	var template = "<html><head><title>コンテンツ一覧</title><link rel=stylesheet type=text/css href=style.css title=Type1 /></head><body>";
 	template += "<center><div id=html></div></center></body></html>";
 	var newWin2 = window.open("", "newWin2", "width=520, toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=no");
