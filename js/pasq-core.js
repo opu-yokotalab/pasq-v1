@@ -93,13 +93,38 @@ function onloadMeta(data){
 	pcdFileName = metaData.PasQ.InitialDataUrl.PCD.src;
 	// コンテンツがない場合はメタファイルのCCDを省略 or CCD.srcを空文字に
 	if(metaData.PasQ.InitialDataUrl.CCD) ccdFileName = metaData.PasQ.InitialDataUrl.CCD.src;
-
+	
+	//BMDファイル読込
 	bmd = new JKL.ParseXML(basePath+bmdFileName);
 	var func = function(data){	
 		onloadBMD(data);
 	}
 	bmd.async(func);	
 	bmd.parse();
+	
+	//PCDファイル読込
+	pcd = new JKL.ParseXML(basePath + pcdFileName);
+	var func = function(data){
+		onloadPCD(data);
+	}
+	pcd.async(func);
+	pcd.parse();
+	
+	
+	// CCDファイルがある場合、CCDファイル読込
+	if(ccdFileName){
+		ccd = new JKL.ParseXML(basePath+ccdFileName);
+		var func = function(data){	
+			onloadCCD(data);
+		}
+		ccd.async(func);
+		ccd.parse();
+	}
+	else{
+		//CCDないけど、読込完了したということにする
+		isCCDloaded = true;
+		checkAllReady();
+	}
 }
 
 function onloadBMD(data){
@@ -107,21 +132,10 @@ function onloadBMD(data){
 	
 	// Google Mapsの読込 (pasq-map.js)
 	loadMap();
-
 	isBMDloaded = true;
-
-	makeMapTag();
+	checkAllReady();
 }
 
-
-function makeMapTag(){
-	pcd = new JKL.ParseXML(basePath + pcdFileName);
-	var func = function(data){
-		onloadPCD(data);
-	}
-	pcd.async(func);
-	pcd.parse();
-}
 
 function onloadPCD(data){
 	PCDobj = data.PCD;
@@ -132,11 +146,34 @@ function onloadPCD(data){
 	}
 	
 	isPCDloaded = true;
-	makeAppletTag();
+	checkAllReady();
 	
 }
 
+function onloadCCD(data){
+	CCDobj = data.CCD;
+	isCCDloaded = true;
+	checkAllReady();
+}
+
+
+// BMD、PCD、CCDの読込が完了していたらスタート
+function checkAllReady(){
+	
+	if(isBMDloaded && isPCDloaded && isCCDloaded){
+		makeAppletTag();
+
+		//map-decolation.jsのopuMap関数
+		opuMap();
+	
+		startCalculate();
+	}
+}
+
+
+
 function makeAppletTag(){
+
 	var aptag = document.createElement("applet");
 	aptag.setAttribute("archive",appletPath);
 	aptag.setAttribute("code",appletClass);
@@ -146,41 +183,16 @@ function makeAppletTag(){
 	aptag.setAttribute("id",appletId);
 	aptag.setAttribute("name",appletName);
 	aptag.setAttribute("mayscript",appletMayscript);
-
+	
 	makeParamTag(aptag);
 
 	document.getElementById("area_view").appendChild(aptag);
 
 	appPTV = document.ptviewer;
 
-
-//////////
-
-	// CCDファイルがある場合
-	if(ccdFileName){
-		ccd = new JKL.ParseXML(basePath+ccdFileName);
-		var func = function(data){	
-			onloadCCD(data);
-		}
-		ccd.async(func);
-		ccd.parse();
-	}
-	else checkAllReady();
-
-//////////
 }
 
-//////////
 
-function onloadCCD(data){
-	CCDobj = data.CCD;
-
-	isCCDloaded = true;
-
-	checkAllReady();
-}
-
-//////////
 
 /**
  * appletタグにparamタグを付加
@@ -222,9 +234,8 @@ function makeParamTag(aptag){
 	paramtag = makeParamTagElement("fovmax",fov_max);
 	aptag.appendChild(paramtag);
 	paramtag = makeParamTagElement("fovmin",fov_min);
-	aptag.appendChild(paramtag);
+
 	
-	// hotspotの動的追加 (現在、起動時のみなぜか動作せず)
 	var hsList = calcHS(PCDobj.Panoramas.startpano);
 	if(hsList.length){
 		for(var i = 0; i < hsList.length; i++){
@@ -249,16 +260,6 @@ function makeParamTagElement(name, value){
 }
 
 
-// BMD，PCD の準備が出来ていたら計算開始
-function checkAllReady(){
-	if(isBMDloaded && isPCDloaded){
-
-	//map-decolation.jsのopuMap関数
-		opuMap();
-
-		startCalculate();
-	}
-}
 
 function startCalculate(){
 /*
