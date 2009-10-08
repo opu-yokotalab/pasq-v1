@@ -48,8 +48,9 @@ var firstfov = 105;
 var firstpan = 0;
 
 //後退切替用パラメータ
+var base_fov_next = 105;
 var previousStat = {};
-previousStat.fov_next = 105;
+previousStat.fov_next = base_fov_next;
 previousStat.panoid = "";
 
 
@@ -463,6 +464,7 @@ function getview(p,t,f){
 			//パン角の補正
 			p = (p-nowStat.offsetNorth+calcNorthOffset(PCDobj.Panoramas.Panorama[temp_backid].panoid));
 			//パノラマ画像切替
+			previousStat.panoid = "";
 			changePano(PCDobj.Panoramas.Panorama[temp_backid].panoid,p,t,parseFloat(PCDobj.Panoramas.Panorama[temp_backid].chpanos.chpano[temp_num_chpano].fov.base));
 		}
 	}	
