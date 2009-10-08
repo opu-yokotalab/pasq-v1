@@ -40,7 +40,9 @@ nowStat.offsetNorth = "";
 nowStat.arLink = [];
 
 
-
+//視野角の最小値と最大値
+var fov_max = 140;
+var fov_min = 40;
 
 var firstfov = 105;
 var firstpan = 0;
@@ -217,6 +219,10 @@ function makeParamTag(aptag){
 	aptag.appendChild(paramtag);
 	paramtag = makeParamTagElement("pan", firstpan);
 	aptag.appendChild(paramtag);
+	paramtag = makeParamTagElement("fovmax",fov_max);
+	aptag.appendChild(paramtag);
+	paramtag = makeParamTagElement("fovmin",fov_min);
+	aptag.appendChild(paramtag);
 	
 	// hotspotの動的追加 (現在、起動時のみなぜか動作せず)
 	var hsList = calcHS(PCDobj.Panoramas.startpano);
@@ -247,7 +253,7 @@ function makeParamTagElement(name, value){
 function checkAllReady(){
 	if(isBMDloaded && isPCDloaded){
 
-	//map-decolation.jsのopuMap関数 　てか、下の一行いらないと思う byハマノ
+	//map-decolation.jsのopuMap関数
 		opuMap();
 
 		startCalculate();
@@ -435,7 +441,7 @@ function getview(p,t,f){
 			}
 		}
 		
-		//切り替える画像があるとき切り替える。後退切替画像のpanoid、現在のpanoidから切替視野角を求め、切替る
+		//切り替える画像があるとき切り替える。後退切替画像のpanoid、現在のpanoidから切替視野角を求め、切り替える
 		var temp_num_chpano;
 		var temp_backid = number[back_panoid];
 		for(var i=0;i<PCDobj.Panoramas.Panorama[temp_backid].chpanos.chpano.length;i++){
@@ -470,6 +476,8 @@ function changePano(panoid,p,t,f){
 	var str = "param name=" + panoid + " value=";
 	str += "{getview=getview}";
 	str += "{file="+ basePath + PCDobj.Panoramas.Panorama[num].img.src +"}";
+	str += "{fovmax=" + fov_max + "}";
+	str += "{fovmin=" + fov_min + "}";
 	
 	// hotspotの動的追加
 	var hsList = calcHS(panoid);
