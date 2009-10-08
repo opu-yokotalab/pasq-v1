@@ -427,8 +427,13 @@ function getview(p,t,f){
 				}
 			}
 		}
-		//後退切替の画像候補の中から適切なものを探す
-		if(count>0){
+		
+		//後退切換画像がないとき、何もしない
+		if(count<=0){
+			return;
+		}
+		//後退切換画像があるとき、後退切替の画像候補の中から適切なものを探す
+		else{
 			//後退切替候補の中に現在の状態に切替える前のpanoidが含まれれば、それを後退切替画像とする
 			for(var i=0;i<count;i++){
 				if(back_panoidList[i] == previousStat.panoid){
@@ -444,9 +449,10 @@ function getview(p,t,f){
 		//切り替える画像があるとき切り替える。後退切替画像のpanoid、現在のpanoidから切替視野角を求め、切り替える
 		var temp_num_chpano;
 		var temp_backid = number[back_panoid];
-		for(var i=0;i<PCDobj.Panoramas.Panorama[temp_backid].chpanos.chpano.length;i++){
-			if(PCDobj.Panoramas.Panorama[temp_backid].chpanos.chpano[i].panoid == nowStat.panoid){
-				temp_num_chpano = i;
+		
+		for(var j=0;j<PCDobj.Panoramas.Panorama[temp_backid].chpanos.chpano.length;j++){
+			if(PCDobj.Panoramas.Panorama[temp_backid].chpanos.chpano[j].panoid == nowStat.panoid){
+				temp_num_chpano = j;
 			}
 		}
 		if(back_panoid !=="" && f>PCDobj.Panoramas.Panorama[temp_backid].chpanos.chpano[temp_num_chpano].fov.next){
