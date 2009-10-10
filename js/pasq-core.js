@@ -47,12 +47,12 @@ var fov_min = 40;
 var firstfov = 105;
 var firstpan = 0;
 
+
 //後退切替用パラメータ
 var base_fov_next = 105;
 var previousStat = {};
 previousStat.fov_next = base_fov_next;
 previousStat.panoid = "";
-
 
 
 //////////
@@ -71,9 +71,11 @@ var tmp_f = 105;
 // 前進動作継続用フラグ
 var flag_click = false;
 
+
 //後退動作継続用フラグ
 var flag_click_back = false;
-//////////
+
+
 
 // ================================================================
 // start
@@ -362,9 +364,7 @@ function calcStatArLink(){
 
 function getview(p,t,f){
 	var num = number[nowStat.panoid];
-//////////
 	angleOfView(PCDobj.Panoramas.Panorama[num].coords.lng, PCDobj.Panoramas.Panorama[num].coords.lat, p, f);
-//////////
 
 	
 	if(nowStat.arLink[round0360(p-nowStat.offsetNorth)] != undefined){
@@ -380,7 +380,7 @@ function getview(p,t,f){
 					// チルト角の補正
 					t = t - PCDobj.Panoramas.Panorama[num].chpanos.chpano[i].correct.tilt;
 					
-					//後退切替を可能にするためにback_nextに切替視野角を格納
+					//後退切替を可能にするためにpreviousStat.fov_nextに切替視野角を格納
 					previousStat.fov_next = parseFloat(PCDobj.Panoramas.Panorama[num].chpanos.chpano[i].fov.next);
 					previousStat.panoid = nowStat.panoid;
 					
@@ -402,27 +402,35 @@ function getview(p,t,f){
 		var back_panoid = nowStat.arLink[round0360(p-nowStat.offsetNorth + 180)];//180度反対の切換panoidを得る
 		var back_panoid_num = number[back_panoid];
 		//現在の方位の反対方向(180度回転)に切換パノラマがある
-		if(back_panoid !== null){
-			var back_fov = -1;
+		if(back_panoid !== undefined){
+			var back_next = -1; //後退切替の切替後視野角
+			var back_base; //後退切替の切替視野角
 			//後退切換パノラマから現在のパノラマへの切換視野角を調査(できれば、PCDに後退時の切替視野角などのパラメータを持たせて、そこから値を取得させる方が良い)
 			for(var j=0;j<PCDobj.Panoramas.Panorama[back_panoid_num].chpanos.chpano.length; j++){
 				if(PCDobj.Panoramas.Panorama[back_panoid_num].chpanos.chpano[j].panoid === nowStat.panoid){
-					back_fov = parseFloat(PCDobj.Panoramas.Panorama[back_panoid_num].chpanos.chpano[j].fov.base);
-					back_chpano_num = j;
+					back_next = parseFloat(PCDobj.Panoramas.Panorama[back_panoid_num].chpanos.chpano[j].fov.base);
+					back_base = parseFloat(PCDobj.Panoramas.Panorama[back_panoid_num].chpanos.chpano[j].fov.next);
 				}
 			}
 			//後退切換パノラマから現在のパノラマへの切換がないとき、切換視野角がわからないため、適当な値を与える
-			if(back_fov == -1){
-				back_fov = 85;
+			if(back_next == -1){
+				back_next = 85;
+				back_base = 105;
 			}
 			
+			//切替時の補正値を取得し、切替
+			for(var k=0;k<PCDobj.Panoramas.Panorama[num].chpanos.chpano.length;k++){
+				if(PCDobj.Panoramas.Panorama[num].chpanos.chpano[k].panoid == back_panoid){
+					//パン角の補正
+					p =  (p-nowStat.offsetNorth+calcNorthOffset(back_panoid)) - PCDobj.Panoramas.Panorama[num].chpanos.chpano[k].correct.pan;
+					//チルト角の補正
+					t = - PCDobj.Panoramas.Panorama[num].chpanos.chpano[k].correct.tilt;
+				}
+			}
 			//画像の切換え
-			//パン角の補正が必要なら、下の1行を適切に変更
-			//p = (p-nowStat.offsetNorth+calcNorthOffset(back_panoid)) - PCDobj.Panoramas.Panorama[num].chpanos.chpano[back_chpano_num].correct.pan;
-			//チルト角の補正が必要なら、下の1行を適切に変更
-			//t = t - PCDobj.Panoramas.Panorama[num].chpanos.chpano[back_chpano_num].correct.tilt;
-			changePano(back_panoid,p,t,back_fov);
-		}
+			previousStat.fov_next = back_base;
+			changePano(back_panoid,p,t,back_next);
+		}	
 	}
 	
 }
