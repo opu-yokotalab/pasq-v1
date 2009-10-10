@@ -116,7 +116,7 @@ function onloadMeta(data){
 	
 	
 	// CCDファイルがある場合、CCDファイル読込
-	if(ccdFileName){
+	if(ccdFileName !== ""){
 		ccd = new JKL.ParseXML(basePath+ccdFileName);
 		var funcCCD = function(data){	
 			onloadCCD(data);
@@ -124,10 +124,8 @@ function onloadMeta(data){
 		ccd.async(funcCCD);
 		ccd.parse();
 	}
-	else{
-		//CCDないけど、読込完了したということにする
-		isCCDloaded = true;
-		checkAllReady();
+	else{//CCDファイルがない場合
+		isCCDloaded = false;
 	}
 }
 
@@ -163,21 +161,28 @@ function onloadCCD(data){
 
 // BMD、PCD、CCDの読込が完了していたらスタート
 function checkAllReady(){
-	
-	if(isBMDloaded && isPCDloaded && isCCDloaded){
-		makeAppletTag();
-
-		//map-decolation.jsのopuMap関数
-		opuMap();
-	
-		startCalculate();
+	//CCDファイルがないとき
+	if(metaData.PasQ.InitialDataUrl.CCD === undefined){
+		if(isBMDloaded && isPCDloaded){
+			makeAppletTag();
+			//map-decolation.jsのopuMap関数
+			opuMap();
+			startCalculate();
+		}
+	//CCDファイルがあるとき
+	}else{
+		if(isBMDloaded && isPCDloaded && isCCDloaded){
+			makeAppletTag();
+			//map-decolation.jsのopuMap関数
+			opuMap();
+			startCalculate();
+		}
 	}
 }
 
 
 
 function makeAppletTag(){
-
 	var aptag = document.createElement("applet");
 	aptag.setAttribute("archive",appletPath);
 	aptag.setAttribute("code",appletClass);
@@ -278,20 +283,18 @@ function startCalculate(){
 
 	// マップにコンテンツを設定 (ある場合のみ)
 	if(isCCDloaded){
-		var html = '<form name="content"><a href="javascript:contentIchiran();">コンテンツを一覧表示</a><br />' +
-			 '<select name="contentlist" size="10"></select><br />' +
-			 '<input type="button" value="コンテンツの近くへ移動" onclick="gotoContent(-1)" /></form>';
-		document.getElementById("area_content").innerHTML = html;
-		
 		var alphabet = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"];
+		var html = '<form name="content"><a href="javascript:contentIchiran();">コンテンツを一覧表示</a><br />' +
+				   '<select name="contentlist" size="10">' ;
 		for(var i=0; i<CCDobj.Contents.Content.length; i++){
 			var cx = CCDobj.Contents.Content[i].coords.lng;
 			var cy = CCDobj.Contents.Content[i].coords.lat;
 			contentmarker[i] = setContentMarker(cx, cy, i, i % 26);
-
-			// FireFoxでエラー (Optionコンストラクタが動作しない？)
-			content.contentlist.options[i] = new Option(alphabet[i % 26] + ". " + CCDobj.Contents.Content[i].detail.name);
+			html += '<option> ' + alphabet[i%26] + '.'+CCDobj.Contents.Content[i].detail.name + '</option>';
 		}
+		html +=	'</select><br />' +
+				'<input type="button" value="コンテンツの近くへ移動" onclick="gotoContent(-1)" /></form>';
+		document.getElementById("area_content").innerHTML = html;
 	}
 
 	//マップに初期パノラマを設定
