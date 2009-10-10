@@ -392,82 +392,38 @@ function getview(p,t,f){
 	}
 				
 	////////////////////////////////////////////後退切替処理
-	//全探索で今の方位で現在のパノラマ画像に切り替わるリストを作成
-	//そのリストの中に一つ前のパノラマがあれば、それに切換え
-	//なければ、リストの一番目に切換え
-
-
+	//現在の方位から反対方向(つまり、+180度)に切り替えるパノラマを調査
+	//あれば、次にそのパノラマから現在のパノラマへの切換視野角を調査
+	//切換視野角がわかれば、その切換視野角で切換え。
+	//わからなければ、固定値で切換え(無限に前後での切換が発生する可能性あり)
+	　	
 	//視野角が切り替えたときの値より大きいときは後退切替判定を行う
 	if(f > previousStat.fov_next){
-		//画像における位置を示す角度pを方位を示すtemp_pに変換する
-		var temp_p = p - calcNorthOffset(nowStat.panoid);
-		if(temp_p<0){
-			temp_p = temp_p+360;
-		}
-		
-		var count=0;
-		var back_panoidList = new Array();
-		var back_panoid = "";
+		var back_panoid = nowStat.arLink[round0360(p-nowStat.offsetNorth + 180)];//180度反対の切換panoidを得る
+		var back_panoid_num = number[back_panoid];
+		//現在の方位の反対方向(180度回転)に切換パノラマがある
+		if(back_panoid !== null){
+			var back_fov = -1;
+			//後退切換パノラマから現在のパノラマへの切換視野角を調査(できれば、PCDに後退時の切替視野角などのパラメータを持たせて、そこから値を取得させる方が良い)
+			for(var j=0;j<PCDobj.Panoramas.Panorama[back_panoid_num].chpanos.chpano.length; j++){
+				if(PCDobj.Panoramas.Panorama[back_panoid_num].chpanos.chpano[j].panoid === nowStat.panoid){
+					back_fov = parseFloat(PCDobj.Panoramas.Panorama[back_panoid_num].chpanos.chpano[j].fov.base);
+					back_chpano_num = j;
+				}
+			}
+			//後退切換パノラマから現在のパノラマへの切換がないとき、切換視野角がわからないため、適当な値を与える
+			if(back_fov == -1){
+				back_fov = 85;
+			}
 			
-		//後退のときに切り替えるべきパノラマ画像が判明していないとき後退時に切り替えるべきパノラマ画像を探す
-		for(var j = 0; j < PCDobj.Panoramas.Panorama.length; j++){
-			for(var k = 0; k<PCDobj.Panoramas.Panorama[j].chpanos.chpano.length; k++){
-				//切替先に今のパノラマ画像が設定されているパノラマ画像を探す
-				if(PCDobj.Panoramas.Panorama[j].chpanos.chpano[k].panoid === nowStat.panoid){
-					//切替先に今のパノラマ画像が設定されていて、その切替角度範囲に現在の角度が含まれているパノラマ画像を探す
-					//rangeのstartとend間で360度をまたがないとき
-					if(parseFloat(PCDobj.Panoramas.Panorama[j].chpanos.chpano[k].range.start) < parseFloat(PCDobj.Panoramas.Panorama[j].chpanos.chpano[k].range.end)){
-						if(parseFloat(PCDobj.Panoramas.Panorama[j].chpanos.chpano[k].range.start) <= temp_p && parseFloat(PCDobj.Panoramas.Panorama[j].chpanos.chpano[k].range.end) > temp_p){
-							back_panoidList[count] = PCDobj.Panoramas.Panorama[j].panoid;
-							count++;
-						}
-					}
-					//rangeのstartとend間で360度をまたぐとき
-					else{
-						if(parseFloat(PCDobj.Panoramas.Panorama[j].chpanos.chpano[k].range.start) >= temp_p || parseFloat(PCDobj.Panoramas.Panorama[j].chpanos.chpano[k].range.end) < temp_p){
-							back_panoidList[count] = PCDobj.Panoramas.Panorama[j].panoid;
-							count++;
-						}
-					}		
-				}
-			}
+			//画像の切換え
+			//パン角の補正が必要なら、下の1行を適切に変更
+			//p = (p-nowStat.offsetNorth+calcNorthOffset(back_panoid)) - PCDobj.Panoramas.Panorama[num].chpanos.chpano[back_chpano_num].correct.pan;
+			//チルト角の補正が必要なら、下の1行を適切に変更
+			//t = t - PCDobj.Panoramas.Panorama[num].chpanos.chpano[back_chpano_num].correct.tilt;
+			changePano(back_panoid,p,t,back_fov);
 		}
-		
-		//後退切換画像がないとき、何もしない
-		if(count<=0){
-			return;
-		}
-		//後退切換画像があるとき、後退切替の画像候補の中から適切なものを探す
-		else{
-			//後退切替候補の中に現在の状態に切替える前のpanoidが含まれれば、それを後退切替画像とする
-			for(i=0;i<count;i++){
-				if(back_panoidList[i] == previousStat.panoid){
-					back_panoid = previousStat.panoid;
-				}
-			}
-			//後退切替広報の中に現在の状態に切替える前のpanoidが含まれていないとき、とりあえずbacki_panoidListの一番目を後退切替画像とする
-			if(back_panoid === ""){
-				back_panoid = back_panoidList[0];
-			}
-		}
-		
-		//切り替える画像があるとき切り替える。後退切替画像のpanoid、現在のpanoidから切替視野角を求め、切り替える
-		var temp_num_chpano;
-		var temp_backid = number[back_panoid];
-		
-		for(j=0;j<PCDobj.Panoramas.Panorama[temp_backid].chpanos.chpano.length;j++){
-			if(PCDobj.Panoramas.Panorama[temp_backid].chpanos.chpano[j].panoid == nowStat.panoid){
-				temp_num_chpano = j;
-			}
-		}
-		if(back_panoid !=="" && f>PCDobj.Panoramas.Panorama[temp_backid].chpanos.chpano[temp_num_chpano].fov.next){
-			//パン角の補正
-			p = (p-nowStat.offsetNorth+calcNorthOffset(PCDobj.Panoramas.Panorama[temp_backid].panoid));
-			//パノラマ画像切替
-			previousStat.panoid = "";
-			changePano(PCDobj.Panoramas.Panorama[temp_backid].panoid,p,t,parseFloat(PCDobj.Panoramas.Panorama[temp_backid].chpanos.chpano[temp_num_chpano].fov.base));
-		}
-	}	
+	}
 	
 }
 
