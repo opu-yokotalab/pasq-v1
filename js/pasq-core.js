@@ -396,7 +396,7 @@ function getview(p,t,f){
 	//あれば、次にそのパノラマから現在のパノラマへの切換視野角を調査
 	//切換視野角がわかれば、その切換視野角で切換え。
 	//わからなければ、固定値で切換え(無限に前後での切換が発生する可能性あり)
-	　	
+	
 	//視野角が切り替えたときの値より大きいときは後退切替判定を行う
 	if(f > previousStat.fov_next){
 		var back_panoid = nowStat.arLink[round0360(p-nowStat.offsetNorth + 180)];//180度反対の切換panoidを得る
@@ -526,7 +526,8 @@ function calcHS(panoid){
 					}else{
 						pos_y = parseInt(PCDobj.Panoramas.Panorama[num].img.height,10) / 2;
 					}
-					var hsStr = "x" + Math.floor(pos_x) + " y" + Math.floor(pos_y) + " i'" + CCDobj.Contents.Content[i].detail.name + "' cffffff e u'javascript:contentWindow(" + i + ")' q";
+					var nameLength = CCDobj.Contents.Content[i].detail.name.length;
+					var hsStr = "x" + Math.floor(pos_x) + " y" + Math.floor(pos_y) + " i'" + CCDobj.Contents.Content[i].detail.name + "|↙' e cffffff u'javascript:contentWindow(" + i + ")' q";
 					hsList[hsList.length] = hsStr;
 				}
 			}
