@@ -243,6 +243,8 @@ function makeParamTag(aptag){
 	aptag.appendChild(paramtag);
 	paramtag = makeParamTagElement("pan", firstpan);
 	aptag.appendChild(paramtag);
+	paramtag = makeParamTagElement("fov", firstfov);
+	aptag.appendChild(paramtag);
 	paramtag = makeParamTagElement("fovmax",fov_max);
 	aptag.appendChild(paramtag);
 	paramtag = makeParamTagElement("fovmin",fov_min);
