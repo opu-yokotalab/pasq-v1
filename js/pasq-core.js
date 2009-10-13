@@ -246,6 +246,7 @@ function makeParamTag(aptag){
 	paramtag = makeParamTagElement("fovmax",fov_max);
 	aptag.appendChild(paramtag);
 	paramtag = makeParamTagElement("fovmin",fov_min);
+	aptag.appendChild(paramtag);
 
 	
 	var hsList = calcHS(PCDobj.Panoramas.startpano);
@@ -538,7 +539,7 @@ function calcHS(panoid){
 						pos_y = parseInt(PCDobj.Panoramas.Panorama[num].img.height,10) / 2;
 					}
 					var nameLength = CCDobj.Contents.Content[i].detail.name.length;
-					var hsStr = "x" + Math.floor(pos_x) + " y" + Math.floor(pos_y) + " i'" + CCDobj.Contents.Content[i].detail.name + "|↙' e cffffff u'javascript:contentWindow(" + i + ")' q";
+					var hsStr = "x" + Math.floor(pos_x) + " y" + Math.floor(pos_y) + " i'" + CCDobj.Contents.Content[i].detail.name + "' e cffffff u'javascript:contentWindow(" + i + ")' q";
 					hsList[hsList.length] = hsStr;
 				}
 			}
