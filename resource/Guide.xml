@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Guide>
+	<route id="route1" startpanoid="pano309">
+		<point panoid="pano298"/>
+		<point panoid="pano330"/>
+		<point panoid="pano327"/>
+	</route>
+</Guide>
