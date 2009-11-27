@@ -53,9 +53,6 @@ var base_fov_next = 105;
 var previousStat = {};
 previousStat.fov_next = base_fov_next;
 previousStat.panoid = "";
-//後退切換時に切換視野角がわからないときの切換視野角の値
-var back_next_tekito = 85;
-var back_base_tekito = 105;
 
 
 //////////
@@ -391,6 +388,7 @@ function getview(p,t,f){
 					
 					//後退切替を可能にするためにpreviousStat.fov_nextに切替視野角を格納
 					previousStat.fov_next = parseFloat(PCDobj.Panoramas.Panorama[num].chpanos.chpano[i].fov.next);
+					previousStat.panoid = nowStat.panoid;
 					
 					//切替後のパノラマ画像のpanoid,p,t,切替後の視野角を与えて、画像切替
 					changePano(id,p,t,parseFloat(PCDobj.Panoramas.Panorama[num].chpanos.chpano[i].fov.next));
@@ -422,8 +420,8 @@ function getview(p,t,f){
 			}
 			//後退切換パノラマから現在のパノラマへの切換がないとき、切換視野角がわからないため、適当な値を与える
 			if(back_next == -1){
-				back_next = back_next_tekito;
-				back_base = back_base_tekito;
+				back_next = 85;
+				back_base = 105;
 			}
 			
 			//切替時の補正値を取得し、切替
@@ -449,9 +447,6 @@ function changePano(panoid,p,t,f){
 	t = (t)? t: 0;
 	f = (f)? f: 105;
 
-	//切換前のパノラマIDを格納
-	previousStat.panoid = nowStat.panoid;
-	//nowStatを切換後の状態に変更
 	calcNowStat(panoid);
 	
 	//calculate offset for north
@@ -473,8 +468,7 @@ function changePano(panoid,p,t,f){
 			str += "{hotspot" + i + "=" + hsList[i] + "}";
 		}
 	}
-	
-	
+
 	appPTV.newPano(str, p, t, f);
 	
 		
