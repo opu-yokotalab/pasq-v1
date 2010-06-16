@@ -14,14 +14,14 @@ function loadMap() {
 
 // 地図の中心を指定した緯度･経度に移動 (近い距離はスクロール移動)
 function goCenter(px,py){
-	map.panTo(new GLatLng(py,px));
+	map.panTo(new GLatLng(px,py));
 }
 
 
 // 点1から点3までを結ぶ赤線を引く
 function addLine(x1,y1,x2,y2,x3,y3) {
 	// 座標配列
-	var points = [new GLatLng(y1,x1),new GLatLng(y2,x2),new GLatLng(y3,x3)];
+	var points = [new GLatLng(x1,y1),new GLatLng(x2,y2),new GLatLng(x3,y3)];
 	var lineObj = new GPolyline(points, "#ff0000",2,1);
 	map.addOverlay(lineObj);
 	return lineObj;
@@ -38,13 +38,13 @@ function setCenterMarker(px,py){
 	centerMarkerObj.iconSize = new GSize(12,20);
 	// 中心座標(画像上で緯度・経度を指し示す位置)を指定
 	centerMarkerObj.iconAnchor = new GPoint(6,20);
-	var marker = new GMarker(new GLatLng(py,px),centerMarkerObj);
+	var marker = new GMarker(new GLatLng(px,py),centerMarkerObj);
 	map.addOverlay(marker);
 	return marker;
 }
 
 // 緑マーカー(パノラマ位置)を設置 (現在未使用)
-function setPanoMarker(px,py){
+function setPanoMarker(py,px){
 	var panoMarkerObj = new GIcon();
 	panoMarkerObj.image = "./image/mm_20_green.png";
 	panoMarkerObj.iconSize = new GSize(12,20);
@@ -60,7 +60,7 @@ function setContentMarker(px, py, i, num){
 	contentMarkerObj.image = "./image/marker_" + num + ".png";
 	contentMarkerObj.iconSize = new GSize(20, 34);
 	contentMarkerObj.iconAnchor = new GPoint(10, 34);
-	var marker = new GMarker(new GLatLng(py, px), contentMarkerObj);
+	var marker = new GMarker(new GLatLng(px, py), contentMarkerObj);
 	marker.title = i;
 	map.addOverlay(marker);
 
@@ -70,7 +70,6 @@ function setContentMarker(px, py, i, num){
 		// pasq-core.js側の関数呼び出し
 		parent.markerAction(marker.title);
 	});
-	return marker;
 }
 
 
