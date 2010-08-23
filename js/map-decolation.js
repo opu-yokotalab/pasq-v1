@@ -4,9 +4,9 @@
  
 // 県大キャンパスマップの画像を貼り付け
 function opuMap(){
-	var pointNE = new GLatLng(34.697016895486406, 133.78812432289123);
-	var pointSW = new GLatLng(34.68802784236585, 133.77511024475098);
-	var groundOverlay = new GGroundOverlay("./image/map_opu.png",new GLatLngBounds(pointSW, pointNE));
+	var pointNE = new google.maps.LatLng(34.697016895486406, 133.78812432289123);
+	var pointSW = new google.maps.LatLng(34.68802784236585, 133.77511024475098);
+	var groundOverlay = new google.maps.GroundOverlay("./image/map_opu.png",new google.maps.LatLngBounds(pointSW, pointNE));
 	addObject(groundOverlay);
 }
 

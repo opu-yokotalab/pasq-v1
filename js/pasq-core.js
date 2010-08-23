@@ -809,8 +809,7 @@ var flag_click_back = false;
 		}
 		//パノラマ切替があったとき
 		else{
-			removeObject(centerMarker);
-			centerMarker = setCenterMarker(lat_marker,lng_marker);
+			moveMarker(centerMarker,lat_marker,lng_marker);
 			goCenter(lat_marker,lng_marker);
 			map_fov(lat_marker,lng_marker,nowState.dir,nowState.fov);
 			
