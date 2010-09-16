@@ -267,9 +267,10 @@ window.onload = function() {
 //google maps
 	map = new GMap2(document.getElementById("gmap"));
 	map.setCenter(new GLatLng(34.69205936376485, 133.78026813268661), 0);
+	map.addControl(new GMenuMapTypeControl());
 	map.addControl(new GLargeMapControl());
 	map.addControl(new GScaleControl());
-	map.setZoom(17);
+	map.setZoom(18);
 
 	GEvent.addListener(map,"click",function(marker,point){
 		if(marker){ // マーカーをクリックした時
