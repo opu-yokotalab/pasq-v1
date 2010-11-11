@@ -625,46 +625,59 @@ var flag_click_back = false;
 	 *	@param	state
 	 */
 	function checkChangePanorama(state){
-		var range_start;
-		var range_end;
+		var range_start = new Array();
+		var range_end = new Array();
+		var fov_change = new Array();
+		var chpano = new Array();
 		var pano = PCDobj.Panoramas.Panorama[panoidToPanoNumber[state.panoid]];
 		var panoid_change,pan_correct,tilt_correct,fov_changeAfter;
-		var fov_change;
 		var backdir = (state.dir + 180) % 360;
 		
-		//近傍情報を基にパノラマ切替が必要か判断し、必要であれば切替を行う
+		//近傍情報の値を取得
+		////Panoramaに対してchpano要素が一つのとき
+		if(pano.chpanos.chpano.length == null){
+			chpano[0] = pano.chpanos.chpano;
+			range_start[0] = parseFloat(chpano[0].range.start);
+			range_end[0] = parseFloat(chpano[0].range.end);
+			fov_change[0] = parseFloat(chpano[0].fov.base);
+		}
+		////Panoramaに対してchpano要素が一つでないとき
 		for(var i=0; i < pano.chpanos.chpano.length; i++){
-			range_start = parseFloat(pano.chpanos.chpano[i].range.start);
-			range_end = parseFloat(pano.chpanos.chpano[i].range.end);
-			fov_change = parseFloat(pano.chpanos.chpano[i].fov.base);
-			
-			if(range_start <= range_end){  //0度をまたがないとき
+			chpano[i] = pano.chpanos.chpano[i];
+			range_start[i] = parseFloat(chpano[i].range.start);
+			range_end[i] = parseFloat(chpano[i].range.end);
+			fov_change[i] = parseFloat(chpano[i].fov.base);
+		}
+		
+		//近傍情報(range_start,range_end,fov_change)の値を基に、必要であれば切替を行う
+		for(i=0;i<chpano.length;i++){
+			if(range_start[i] <= range_end[i]){  //0度をまたがないとき
 				//前進切替判断
-				if( range_start <= state.dir && state.dir <= range_end){  //切替範囲内にあるとき
+				if( range_start[i] <= state.dir && state.dir <= range_end[i]){  //切替範囲内にあるとき
 					//今のfovが切替視野角より大きいとき、パノラマ画像を切り替える(前進)
-					if( state.fov < fov_change){
+					if( state.fov < fov_change[i]){
 						//前進切替
-						goChangePano(state,pano.chpanos.chpano[i]);
+						goChangePano(state,chpano[i]);
 						return;
 					}
 				}
 				//後退切替判断
-				if(range_start <= backdir && backdir <= range_end){
+				if(range_start[i] <= backdir && backdir <= range_end[i]){
 					if(state.fov > fov_preChange){  //fov_preChangeはPCDに後退切替用の切替視野角を設け、それに置き換えたい
 						//後退切替
-						backChangePano(state,pano.chpanos.chpano[i]);
+						backChangePano(state,chpano[i]);
 						return;
 					}
 				}
 			}
 			//0度をまたぐとき
-			else if(range_start > range_end){
+			else if(range_start[i] > range_end[i]){
 				//前進切替判断
-				if( state.dir <= range_end || range_start <= state.dir){
+				if( state.dir <= range_end[i] || range_start[i] <= state.dir){
 					//今のfovが切替視野角より大きいとき、パノラマ画像を切り替える(前進)
-					if( state.fov < fov_change){
+					if( state.fov < fov_change[i]){
 						//前進切替
-						goChangePano(state,pano.chpanos.chpano[i]);
+						goChangePano(state,chpano[i]);
 						return;
 					}
 				}
@@ -672,12 +685,14 @@ var flag_click_back = false;
 				if(backdir <= range_end || range_start <= backdir){
 					if(state.fov > fov_preChange){  //fov_preChangeはPCDに後退切替用の切替視野角を設け、それに置き換えたい
 						//後退切替
-						backChangePano(state,pano.chpanos.chpano[i]);
+						backChangePano(state,chpano[i]);
 						return;
 					}
 				}
 			}
 		}
+		
+		
 	}
 	
 	
