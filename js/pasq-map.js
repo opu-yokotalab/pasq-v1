@@ -8,7 +8,7 @@ function loadMap() {
 		zoom: 17,
 		center: latlng,
 		mapTypeControl: false,
-		mapTypeId: google.maps.MapTypeId.ROADMAP,
+		mapTypeId: google.maps.MapTypeId.ROADMAP
 	};
 	
 	
@@ -33,7 +33,7 @@ function addLine(x1,y1,x2,y2,x3,y3){
 		map: map,
 		path: points,
 		strokeColor: "#ff0000", //線の色
-		strokeWeight: 2, //線の太さ
+		strokeWeight: 2 //線の太さ
 	};
 	var lineObj = new google.maps.Polyline(option);
 	lineObj.setMap(map);
